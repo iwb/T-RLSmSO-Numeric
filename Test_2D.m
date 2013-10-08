@@ -1,4 +1,4 @@
-function out = model
+%function out = model
 %
 % Test_2D.m
 %
@@ -80,6 +80,7 @@ model.mesh('mesh1').run;
 
 model.study.create('std1');
 model.study('std1').feature.create('time', 'Transient');
+ModelUtil.showProgress(true);
 
 model.sol.create('sol1');
 model.sol('sol1').study('std1');
@@ -121,4 +122,4 @@ model.result('pg2').feature('con1').set('colortable', 'ThermalLight');
 model.result('pg2').feature('arws1').name('Arrow surface');
 model.result('pg2').feature('arws1').set('color', 'gray');
 
-out = model;
+%out = model;
