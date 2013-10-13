@@ -9,9 +9,6 @@ import com.comsol.model.util.*
 Tv = 2000;
 Keyhole_Positions = linspace(5, 50, 12);
 
-%% Plotfenster öffnen
-h = figure;
-
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
 ModelUtil.remove('Model');

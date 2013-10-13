@@ -1,6 +1,4 @@
 clear all;
-close all;
-clc;
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -8,9 +6,6 @@ import com.comsol.model.util.*
 %% Parameter für das Modell
 Tv = 2000;
 Keyhole_Positions = linspace(5, 50, 12);
-
-%% Plotfenster öffnen
-h = figure;
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
@@ -67,14 +62,16 @@ Model.mesh('mesh1').feature('size').set('custom', 'on');
 Model.mesh('mesh1').feature('size').set('hmax', '1');
 Model.mesh('mesh1').feature.create('ftri1', 'FreeTri');
 Model.mesh('mesh1').feature('ftri1').selection.geom('geom1');
-Model.mesh('mesh1').feature('size').set('hmax', '2.3');
-Model.mesh('mesh1').feature('size').set('hgrad', '1.2');
+Model.mesh('mesh1').feature('size').set('hmax', '3.3');
+Model.mesh('mesh1').feature('size').set('hgrad', '1.3');
 Model.mesh('mesh1').run;
 
 %% Mesh plotten
 subplot(2, 1, 1);
 mphmesh(Model);
 drawnow;
+
+input('Generated Mesh. Enter to continue...');
 
 %% Solver konfigurieren
 Model.study('std1').feature('time').set('tlist', '0.1');
@@ -92,14 +89,18 @@ Model.result('pg').feature('surf1').set('colortable', 'ThermalLight');
 Model.result('pg').feature('surf1').set('data', 'parent');
 
 %% Modell lösen
-%ModelUtil.showProgress(true);
+ModelUtil.showProgress(true);
 Solver.runAll;
 Model.result('pg').set('data', 'dset1');
 
 %% Temperaturfeld Plotten
-subplot(2, 1, 2);
+h1 = subplot(2, 1, 2);
 mphplot(Model, 'pg', 'rangenum', 1);
 drawnow;
+
+%Next 3 lines of code are intended to stop the subplots from shrinking 
+%while using colorbar, standard bug in matlab.
+ax1 = get(h1,'position'); % Save the position as ax
 
 for i=2:length(Keyhole_Positions)
 	
@@ -117,11 +118,12 @@ for i=2:length(Keyhole_Positions)
 	drawnow;
 
 	%% Modell Lösen
-	Solver.runAll;	
-
+	Solver.runAll;
+	
 	%% Temperaturfeld Plotten
 	subplot(2, 1, 2);
 	mphplot(Model, 'pg', 'rangenum', 1);
+	set(gca,'position',ax1); % Manually setting this holds the position with colorbar
 	drawnow;
 	
 	%% GIF Animnation erzeugn
