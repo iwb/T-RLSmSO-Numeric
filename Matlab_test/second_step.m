@@ -1,8 +1,8 @@
 function out = model
 %
-% comsol_init_3.m
+% second_step.m
 %
-% Model exported on Oct 8 2013, 14:30 by COMSOL 4.3.1.161.
+% Model exported on Oct 13 2013, 16:33 by COMSOL 4.3.1.161.
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -166,5 +166,90 @@ model.result('pg2').feature('arws1').set('data', 'parent');
 model.sol('sol1').runAll;
 
 model.result('pg1').run;
+
+model.name('basic.mph');
+
+model.result('pg1').run;
+
+model.sol('sol1').detach;
+model.sol.create('sol2');
+model.sol('sol2').study('std1');
+model.sol('sol2').feature.create('st1', 'StudyStep');
+model.sol('sol2').feature('st1').set('study', 'std1');
+model.sol('sol2').feature('st1').set('studystep', 'time');
+model.sol('sol2').feature.create('v1', 'Variables');
+model.sol('sol2').feature('v1').set('control', 'time');
+model.sol('sol2').feature.create('t1', 'Time');
+model.sol('sol2').feature('t1').set('tlist', '0.1');
+model.sol('sol2').feature('t1').set('plot', 'off');
+model.sol('sol2').feature('t1').set('plotgroup', 'pg1');
+model.sol('sol2').feature('t1').set('plotfreq', 'tout');
+model.sol('sol2').feature('t1').set('probesel', 'all');
+model.sol('sol2').feature('t1').set('probes', {});
+model.sol('sol2').feature('t1').set('probefreq', 'tsteps');
+model.sol('sol2').feature('t1').set('atolglobalmethod', 'scaled');
+model.sol('sol2').feature('t1').set('atolglobal', 0.0010);
+model.sol('sol2').feature('t1').set('maxorder', 2);
+model.sol('sol2').feature('t1').set('control', 'time');
+model.sol('sol2').feature('t1').feature.create('fc1', 'FullyCoupled');
+model.sol('sol2').feature('t1').feature('fc1').set('jtech', 'once');
+model.sol('sol2').feature('t1').feature('fc1').set('maxiter', 5);
+model.sol('sol2').feature('t1').feature.create('d1', 'Direct');
+model.sol('sol2').feature('t1').feature('d1').set('linsolver', 'pardiso');
+model.sol('sol2').feature('t1').feature('fc1').set('linsolver', 'd1');
+model.sol('sol2').feature('t1').feature('fc1').set('jtech', 'once');
+model.sol('sol2').feature('t1').feature('fc1').set('maxiter', 5);
+model.sol('sol2').feature('t1').feature.remove('fcDef');
+model.sol('sol2').attach('std1');
+model.sol('sol2').feature('v1').set('control', 'user');
+model.sol('sol2').feature('v1').set('initmethod', 'sol');
+model.sol('sol2').feature('v1').set('initsol', 'sol1');
+model.sol('sol2').feature('v1').set('solnum', 'last');
+
+model.geom('geom1').feature('r2').setIndex('pos', '15', 0);
+model.geom('geom1').runAll;
+
+model.result.create('pg3', 'PlotGroup2D');
+model.result('pg3').name('Temperature 1');
+model.result('pg3').set('data', 'dset2');
+model.result('pg3').set('oldanalysistype', 'noneavailable');
+model.result('pg3').set('t', 0);
+model.result('pg3').set('data', 'dset2');
+model.result('pg3').feature.create('surf1', 'Surface');
+model.result('pg3').feature('surf1').name('Surface');
+model.result('pg3').feature('surf1').set('colortable', 'ThermalLight');
+model.result('pg3').feature('surf1').set('data', 'parent');
+model.result.create('pg4', 'PlotGroup2D');
+model.result('pg4').name('Isothermal contours 1');
+model.result('pg4').set('data', 'dset2');
+model.result('pg4').set('oldanalysistype', 'noneavailable');
+model.result('pg4').set('t', 0);
+model.result('pg4').set('data', 'dset2');
+model.result('pg4').feature.create('con1', 'Contour');
+model.result('pg4').feature('con1').name('Contour');
+model.result('pg4').feature('con1').set('colortable', 'ThermalLight');
+model.result('pg4').feature('con1').set('data', 'parent');
+model.result('pg4').feature.create('arws1', 'ArrowSurface');
+model.result('pg4').feature('arws1').name('Arrow surface');
+model.result('pg4').feature('arws1').set('unit', {'' ''});
+model.result('pg4').feature('arws1').set('color', 'gray');
+model.result('pg4').feature('arws1').set('data', 'parent');
+
+model.sol('sol2').runAll;
+
+model.result('pg3').run;
+
+model.name('basic_step_2.mph');
+
+model.result('pg3').run;
+
+model.physics('ht').feature('init2').name('KH_Rand');
+model.physics('ht').feature('init2').name('KH_Temp');
+model.physics('ht').feature('temp1').name('KH_Rand');
+
+model.name('basic_step_2.mph');
+
+model.result('pg4').run;
+model.result('pg3').run;
 
 out = model;
