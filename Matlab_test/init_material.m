@@ -1,4 +1,4 @@
-function init_material( model )
+function init_Material( model )
 	model.material.create('mat1');
 	model.material('mat1').name('X10NiCrMoTiB1515 (DIN 1.4970) [solid]');
 	model.material('mat1').info.create('DIN');
