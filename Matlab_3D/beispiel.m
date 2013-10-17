@@ -1,9 +1,3 @@
-function out = model
-%
-% beispiel.m
-%
-% Model exported on Oct 13 2013, 22:07 by COMSOL 4.3.1.161.
-
 import com.comsol.model.*
 import com.comsol.model.util.*
 
@@ -13,7 +7,7 @@ model.modelPath('C:\Daten\Julius_FEM\Matlab_3D');
 
 model.modelNode.create('mod1');
 
-model.geom.create('geom1', 3);
+geo = model.geom.create('geom1', 3);
 model.geom('geom1').lengthUnit('mm');
 model.geom('geom1').feature.create('blk1', 'Block');
 model.geom('geom1').feature.create('cyl1', 'Cylinder');
@@ -52,5 +46,3 @@ model.mesh('mesh1').run;
 
 model.study.create('std1');
 model.study('std1').feature.create('time', 'Transient');
-
-out = model;
