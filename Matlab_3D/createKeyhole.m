@@ -1,31 +1,33 @@
-function geometry = createKeyhole(model, Apex, Radius)
+function createKeyhole(model, geometry, point, Apex, Radius)
 
-geometry = model.geom.create('geom1', 3);
-geometry.lengthUnit('mm');
-geometry.feature.create('blk1', 'Block');
-
+dz = -12e-6; % Kopiert
+tag = 1;
 
 for i = 1:size(Apex, 2)-1
     % Schleife läuft nur für jeden Zwischenraum, der obere Schnitt is immer
     % bei i, der untere bei i+1
     
+    pos = point + [Apex(i)-Radius(i); 0; (i-1) * dz * 1e3];
+    displacement = Apex(i)-Radius(i) - (Apex(i+1)-Radius(i+1));
+    r = Radius(i);
+    ratio = Radius(i+1) / Radius(i);
     
+    cone = geometry.feature.create(['econ_' num2str(tag)], 'ECone');
+    cone.set('axis', [0, 0, -1]);
+    cone.set('semiaxes', [r, r]);
+    cone.set('pos', pos');
+    cone.set('h', dz * -1e3);
+    cone.set('displ', [displacement, 0]);
+    cone.set('rat', ratio);
     
+    tag = tag + 1;
 end
 
-geometry.feature.create('cyl1', 'Cylinder');
-geometry.feature.create('cone1', 'Cone');
-geometry.feature('blk1').set('pos', {'0' '-10' '0'});
-geometry.feature('blk1').set('size', {'60' '20' '3'});
-geometry.feature('cyl1').set('r', '0.1');
-geometry.feature('cyl1').set('pos', {'3' '0' '2.5'});
-geometry.feature('cyl1').set('h', '0.5');
-geometry.feature('cone1').set('axis', {'0' '0' '-1'});
-geometry.feature('cone1').set('r', '0.1');
-geometry.feature('cone1').set('specifytop', 'radius');
-geometry.feature('cone1').set('rtop', '0');
-geometry.feature('cone1').set('pos', {'3' '0' '2.5'});
-geometry.feature('cone1').set('h', '0.4');
-geometry.run;
+geometry.run; % Damit die Selektion funktioniert...
+
+model.selection.create('sel1', 'Explicit');
+model.selection('sel1').set(2:size(Apex, 2));
+model.selection('sel1').name('Keyhole_Domain');
 
 end
+
