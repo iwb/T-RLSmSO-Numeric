@@ -1,6 +1,9 @@
-function [ New_Solver ] = getNextSolver( Model, Old_Solver )
+function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt)
 %NEXT_SOLVER Summary of this function goes here
 %   Detailed explanation goes here
+
+	import com.comsol.model.*
+	import com.comsol.model.util.*
 
 	persistent SolverIndex;
 	if isempty(SolverIndex)
@@ -23,7 +26,7 @@ function [ New_Solver ] = getNextSolver( Model, Old_Solver )
 	New_Solver.feature.create('v1', 'Variables');
 	New_Solver.feature('v1').set('control', 'time');
 	New_Solver.feature.create('t1', 'Time');
-	New_Solver.feature('t1').set('tlist', '0.1');
+	New_Solver.feature('t1').set('tlist', dt);
 	New_Solver.feature('t1').set('plot', 'off');
 	New_Solver.feature('t1').set('plotfreq', 'tout');
 	New_Solver.feature('t1').set('probesel', 'all');
@@ -49,5 +52,10 @@ function [ New_Solver ] = getNextSolver( Model, Old_Solver )
 	New_Solver.feature('v1').set('solnum', 'last');
 	
 	Model.result('pg').set('data', new_dset);
+	
+	% Alte Solver löschen
+	if SolverIndex > 2
+		Model.sol.remove(['sol_' num2str(SolverIndex - 2)]);
+	end
 end
 

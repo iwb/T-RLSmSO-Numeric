@@ -1,4 +1,4 @@
-function solver = initSolver( model )
+function solver = initSolver(model, dt)
 	
 	solver = model.sol.create('sol_1');
 	solver.study('std1');
@@ -8,7 +8,7 @@ function solver = initSolver( model )
 	solver.feature.create('v1', 'Variables');
 	solver.feature('v1').set('control', 'time');
 	solver.feature.create('t1', 'Time');
-	solver.feature('t1').set('tlist', '0.1');
+	solver.feature('t1').set('tlist', dt);
 	solver.feature('t1').set('plot', 'off');
 	solver.feature('t1').set('plotfreq', 'tout');
 	solver.feature('t1').set('probesel', 'all');

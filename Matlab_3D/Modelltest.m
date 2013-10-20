@@ -4,10 +4,12 @@ import com.comsol.model.*
 import com.comsol.model.util.*
 
 %% Parameter für das Modell
-Tv = 2000;
-t = 0:0.5:7;
-KH_x = 5 + 0.1*t - cos(t);
-KH_y = sin(t);
+Tv = 3000;
+dt = 0.1;
+t = 0:0.4:10;
+KH_x = 5 + 1*t - 2*cos(t);
+KH_y = 2*sin(t);
+% plot(KH_x, KH_y);
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
@@ -36,23 +38,23 @@ model.study('std1').feature('time').activate('ht', true);
 %% Geometrie erzeugen
 % Probe
 Probe = model.geom('geom1').feature.create('blk1', 'Block');
-model.geom('geom1').feature('blk1').set('pos', [0, -10, 0]);
-model.geom('geom1').feature('blk1').set('size', [60, 20, 3]);
+model.geom('geom1').feature('blk1').set('pos', [0, -7.5, 0]);
+model.geom('geom1').feature('blk1').set('size', [40, 15, 3]);
 Probe.name('Probe');
 
 % Keyhole
 model.geom('geom1').feature.create('cyl1', 'Cylinder');
-model.geom('geom1').feature('cyl1').set('r', 0.1);
-model.geom('geom1').feature('cyl1').set('pos', {'xpos', 'ypos', '2.5'});
-model.geom('geom1').feature('cyl1').set('h', '0.5');
+model.geom('geom1').feature('cyl1').set('r', 0.2);
+model.geom('geom1').feature('cyl1').set('pos', {'xpos', 'ypos', '2'});
+model.geom('geom1').feature('cyl1').set('h', 1);
 
 model.geom('geom1').feature.create('cone1', 'Cone');
 model.geom('geom1').feature('cone1').set('axis', [0, 0, -1]);
-model.geom('geom1').feature('cone1').set('r', '0.1');
+model.geom('geom1').feature('cone1').set('r', 0.2);
 model.geom('geom1').feature('cone1').set('specifytop', 'radius');
 model.geom('geom1').feature('cone1').set('rtop', '0');
-model.geom('geom1').feature('cone1').set('pos', {'xpos', 'ypos', '2.5'});
-model.geom('geom1').feature('cone1').set('h', '0.4');
+model.geom('geom1').feature('cone1').set('pos', {'xpos', 'ypos', '2'});
+model.geom('geom1').feature('cone1').set('h', 1);
 
 model.geom('geom1').run;
 
@@ -83,9 +85,10 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 %% Mesh erzeugen
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
-model.mesh('mesh1').feature('size').set('hmax', '3');
-model.mesh('mesh1').feature('size').set('hcurve', '0.3');
-model.mesh('mesh1').feature('size').set('hgrad', '1.4');
+model.mesh('mesh1').feature('size').set('hmax', 3);
+model.mesh('mesh1').feature('size').set('hmin', 0.9);
+model.mesh('mesh1').feature('size').set('hcurve', 0.1); % Kurvenradius
+model.mesh('mesh1').feature('size').set('hgrad', 1.2); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
@@ -95,9 +98,11 @@ drawnow;
 
 input('Generated Mesh. Enter to continue...');
 
+alltime = tic;
+
 %% Solver konfigurieren
-model.study('std1').feature('time').set('tlist', '0.1');
-Solver = initSolver(model);
+model.study('std1').feature('time').set('tlist', dt);
+Solver = initSolver(model, dt);
 
 %% Anzeige erstellen
 model.result.create('pg', 'PlotGroup3D');
@@ -105,7 +110,7 @@ model.result('pg').name('Temperature');
 model.result('pg').set('data', 'dset1');
 model.result('pg').feature.create('surf1', 'Surface');
 model.result('pg').feature('surf1').name('Surface');
-model.result('pg').feature('surf1').set('colortable', 'ThermalLight');
+model.result('pg').feature('surf1').set('colortable', 'Thermal');
 model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
@@ -119,6 +124,8 @@ h1 = subplot(2, 1, 2);
 mphplot(model, 'pg', 'rangenum', 1);
 drawnow;
 
+toc(alltime)
+
 %Next 3 lines of code are intended to stop the subplots from shrinking 
 %while using colorbar, standard bug in matlab.
 ax1 = get(h1,'position'); % Save the position as ax
@@ -126,7 +133,7 @@ ax1 = get(h1,'position'); % Save the position as ax
 for i=2:length(KH_x)
 	
 	%% Zweiten Solver erzeugen
-	Solver = getNextSolver(model, Solver);
+	Solver = getNextSolver(model, Solver, dt);
 
 	%% Geometrie updaten
 	model.param.set('xpos', KH_x(i));
@@ -145,15 +152,15 @@ for i=2:length(KH_x)
 	
 	%% Temperaturfeld Plotten
 	subplot(2, 1, 2);
-	mphplot(model, 'pg', 'rangenum', 1);
+	mphplot(model, 'pg', 'rangenum', 1);	
 	set(gca,'position',ax1); % Manually setting this holds the position with colorbar
 	drawnow;
 	
-	%% GIF Animnation erzeugn
-	break
+	remaining = (length(KH_x) - i) * toc(alltime) / i;
+	fprintf('%2d von %2d Zeitschritten, noch %0.0fs.\n', i, length(KH_x), remaining);
 end
 
 clearvars h i Tv Solver Probe_rect KH_rect Keyhole_Positions
  
- 
+toc(alltime)
  
