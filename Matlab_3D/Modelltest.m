@@ -6,7 +6,7 @@ import com.comsol.model.util.*
 %% Parameter für das Modell
 Tv = 3000;
 dt = 0.1;
-t = 0:0.4:10;
+t = 0:0.4:16;
 KH_x = 5 + 1*t - 2*cos(t);
 KH_y = 2*sin(t);
 % plot(KH_x, KH_y);
@@ -86,7 +86,7 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', 3);
-model.mesh('mesh1').feature('size').set('hmin', 0.9);
+model.mesh('mesh1').feature('size').set('hmin', 0.8);
 model.mesh('mesh1').feature('size').set('hcurve', 0.1); % Kurvenradius
 model.mesh('mesh1').feature('size').set('hgrad', 1.2); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
@@ -114,6 +114,8 @@ model.result('pg').feature('surf1').set('colortable', 'Thermal');
 model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
+curtime = tic;
+
 %% Modell lösen
 ModelUtil.showProgress(true);
 Solver.runAll;
@@ -124,13 +126,25 @@ h1 = subplot(2, 1, 2);
 mphplot(model, 'pg', 'rangenum', 1);
 drawnow;
 
-toc(alltime)
+itertime = toc(curtime);
+remaining = (length(KH_x) - 1) * itertime;
+fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', 1, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 
 %Next 3 lines of code are intended to stop the subplots from shrinking 
 %while using colorbar, standard bug in matlab.
 ax1 = get(h1,'position'); % Save the position as ax
 
+%% GIF, erster Frame
+filename = './animation.gif';
+frame = getframe(gcf);
+im = frame2im(frame);
+[imind,cm] = rgb2ind(im,256);
+imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
+%%%%%%%%%%%%%%
+
 for i=2:length(KH_x)
+	
+	curtime = tic;
 	
 	%% Zweiten Solver erzeugen
 	Solver = getNextSolver(model, Solver, dt);
@@ -156,8 +170,17 @@ for i=2:length(KH_x)
 	set(gca,'position',ax1); % Manually setting this holds the position with colorbar
 	drawnow;
 	
-	remaining = (length(KH_x) - i) * toc(alltime) / i;
-	fprintf('%2d von %2d Zeitschritten, noch %0.0fs.\n', i, length(KH_x), remaining);
+	%% GIF Animnation erzeugen
+	frame = getframe(gcf);
+	im = frame2im(frame);
+	[imind,cm] = rgb2ind(im,256);
+
+	imwrite(imind, cm, filename,'gif','WriteMode','append');
+	%%%%%%%%%%%%%%%%%%%%
+	
+	itertime = 0.85 * itertime + 0.15 * toc(curtime);
+	remaining = (length(KH_x) - i) * itertime;
+	fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 end
 
 clearvars h i Tv Solver Probe_rect KH_rect Keyhole_Positions
