@@ -1,6 +1,11 @@
 import com.comsol.model.*
 import com.comsol.model.util.*
 
+%% Eventuelle Modelle entfernen
+ModelUtil.clear;
+ModelUtil.remove('Model');
+ModelUtil.showProgress(false);
+
 model = ModelUtil.create('Model');
 model.modelPath('C:\Daten\Julius_FEM\Matlab_3D');
 model.modelNode.create('mod1');
@@ -13,7 +18,8 @@ geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', {'0' '-10' '0'});
 geometry.feature('blk1').set('size', {'60' '20' '3'});
 % Keyhole
-createKeyhole(model, geometry, [10; 0; 3], Apex, Radius);
+load('KH_geom_metric.mat');
+createKeyhole(model, geometry, [10; 0; 3], KH_geom_metric);
 return;
 
 model.physics.create('ht', 'HeatTransfer', 'geom1');

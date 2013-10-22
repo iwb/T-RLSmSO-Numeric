@@ -6,10 +6,13 @@ import com.comsol.model.util.*
 %% Parameter für das Modell
 Tv = 3000;
 dt = 0.1;
-t = 0:0.4:16;
-KH_x = 5 + 1*t - 2*cos(t);
-KH_y = 2*sin(t);
-% plot(KH_x, KH_y);
+t = 0:0.1:35;
+%KH_x = 5 + 0.2*t - 2*cos(t);
+%KH_y = 2*sin(t);
+%plot(KH_x, KH_y);
+
+KH_x = 3:0.1:40;
+KH_y = zeros(1, 371);
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
@@ -39,7 +42,7 @@ model.study('std1').feature('time').activate('ht', true);
 % Probe
 Probe = model.geom('geom1').feature.create('blk1', 'Block');
 model.geom('geom1').feature('blk1').set('pos', [0, -7.5, 0]);
-model.geom('geom1').feature('blk1').set('size', [40, 15, 3]);
+model.geom('geom1').feature('blk1').set('size', [60, 15, 3]);
 Probe.name('Probe');
 
 % Keyhole
