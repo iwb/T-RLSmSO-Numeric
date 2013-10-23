@@ -5,32 +5,39 @@ import com.comsol.model.*
 import com.comsol.model.util.*
 
 %% Parameter für das Modell
-Tv = 3000;
-dt = 0.1;
-t = 0:0.1:35;
-%KH_x = 5 + 0.2*t - 2*cos(t);
-%KH_y = 2*sin(t);
-%plot(KH_x, KH_y);
+Tv = 3133;
+v = 0.05 * 1e3; % [mm/s]
 
-KH_x = 3:0.1:40;
-KH_y = zeros(1, 371);
+Pwidth = 6;
+Pthickness = 3;
+Plength = 10;
+
+
+steps = 40;
+distance = 2; % [mm]
+dx_last = 2e-3;
+cc = [steps, -steps^2; 1, -2*steps] \ [distance; dx_last];
+KH_x = 2 + cc(1) * (1:steps) - cc(2) * (1:steps).^2; % [mm]
+
+dt = diff(KH_x) ./ v;
+dt(end + 1) = dx_last/v;
+
+KH_y = zeros(size(KH_x));
+%plot(KH_x, KH_y, 'o-');
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
 ModelUtil.remove('Model');
 ModelUtil.showProgress(false);
 
-%% Modell erstellen
 model = ModelUtil.create('Model');
-model.param.set('xpos', KH_x(1));
-model.param.set('ypos', KH_y(1));
-
-model.modelPath('C:\Daten\Julius_FEM\Matlab_test');
-model.name('basic_step_2.mph');
+model.modelPath('C:\Daten\Julius_FEM\Matlab_3D');
+model.name('KH_linear.mph');
 
 model.modelNode.create('mod1');
-model.geom.create('geom1', 3);
-model.geom('geom1').lengthUnit('mm');
+
+geometry = model.geom.create('geom1', 3);
+geometry.lengthUnit('mm');
 
 model.mesh.create('mesh1', 'geom1');
 model.physics.create('ht', 'HeatTransfer', 'geom1');
@@ -39,37 +46,23 @@ model.study.create('std1');
 model.study('std1').feature.create('time', 'Transient');
 model.study('std1').feature('time').activate('ht', true);
 
+% Keyholeposition festlegen
+model.param.set('Lx', sprintf('%f [mm]', KH_x(1)));
+model.param.set('Ly', sprintf('%f [mm]', KH_y(1)));
+model.param.set('phi', '0 [°]');
+
 %% Geometrie erzeugen
-% Probe
-Probe = model.geom('geom1').feature.create('blk1', 'Block');
-model.geom('geom1').feature('blk1').set('pos', [0, -7.5, 0]);
-model.geom('geom1').feature('blk1').set('size', [60, 15, 3]);
-Probe.name('Probe');
-
+% Blech
+geometry.feature.create('blk1', 'Block');
+geometry.feature('blk1').set('pos', [0, -Pwidth/2, -Pthickness]);
+geometry.feature('blk1').set('size', [Plength, Pwidth, Pthickness]);
 % Keyhole
-model.geom('geom1').feature.create('cyl1', 'Cylinder');
-model.geom('geom1').feature('cyl1').set('r', 0.2);
-model.geom('geom1').feature('cyl1').set('pos', {'xpos', 'ypos', '2'});
-model.geom('geom1').feature('cyl1').set('h', 1);
+load('KH_geom_metric.mat');
+createKeyhole(model, geometry, KH_geom_metric);
 
-model.geom('geom1').feature.create('cone1', 'Cone');
-model.geom('geom1').feature('cone1').set('axis', [0, 0, -1]);
-model.geom('geom1').feature('cone1').set('r', 0.2);
-model.geom('geom1').feature('cone1').set('specifytop', 'radius');
-model.geom('geom1').feature('cone1').set('rtop', '0');
-model.geom('geom1').feature('cone1').set('pos', {'xpos', 'ypos', '2'});
-model.geom('geom1').feature('cone1').set('h', 1);
-
-model.geom('geom1').run;
-
-KH_domain = model.selection.create('KH_Domain');
-KH_domain.geom(3);
-KH_domain.set([2 3]);
-KH_domain.name('Keyhole_Domain');
-
-KH_boundary = model.selection.create('KH_Boundary', 'Adjacent');
-KH_boundary.set('input', {'KH_Domain'});
-KH_boundary.name('Keyhole_Boundary');
+%% Speichern
+%mphsave(model, 'd:/temp.mph');
+%return;
 
 %% Material zuweisen
 initMaterial(model);
@@ -78,24 +71,27 @@ initMaterial(model);
 % Keyhole Innenraum
 model.physics('ht').feature.create('init2', 'init', 3);
 model.physics('ht').feature('init2').selection.named('KH_Domain');
-model.physics('ht').feature('init2').set('T', 1, num2str(Tv));
+model.physics('ht').feature('init2').set('T', 1, Tv);
 model.physics('ht').feature('init2').name('KH_Temp');
 % Keyhole-Rand
 model.physics('ht').feature.create('temp1', 'TemperatureBoundary', 2);
-model.physics('ht').feature('temp1').selection.named('KH_Boundary');
-model.physics('ht').feature('temp1').set('T0', 1, num2str(Tv));
+model.physics('ht').feature('temp1').selection.named('KH_Bounds');
+model.physics('ht').feature('temp1').set('T0', 1, Tv);
 model.physics('ht').feature('temp1').name('KH_Rand');
 
 %% Mesh erzeugen
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
-model.mesh('mesh1').feature('size').set('hmax', 3);
-model.mesh('mesh1').feature('size').set('hmin', 0.8);
-model.mesh('mesh1').feature('size').set('hcurve', 0.1); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', 1.2); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hmax', 2.5);
+model.mesh('mesh1').feature('size').set('hmin', 0.03);
+model.mesh('mesh1').feature('size').set('hcurve', 1); % Kurvenradius
+model.mesh('mesh1').feature('size').set('hgrad', 1.4); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
+
+mphmeshstats(model)
+
 subplot(2, 1, 1);
 mphmesh(model);
 drawnow;
@@ -105,8 +101,8 @@ input('Generated Mesh. Enter to continue...');
 alltime = tic;
 
 %% Solver konfigurieren
-model.study('std1').feature('time').set('tlist', dt);
-Solver = initSolver(model, dt);
+model.study('std1').feature('time').set('tlist', dt(1));
+Solver = initSolver(model, dt(1));
 
 %% Anzeige erstellen
 model.result.create('pg', 'PlotGroup3D');
@@ -151,11 +147,11 @@ for i=2:length(KH_x)
 	curtime = tic;
 	
 	%% Zweiten Solver erzeugen
-	Solver = getNextSolver(model, Solver, dt);
+	Solver = getNextSolver(model, Solver, dt(i));
 
 	%% Geometrie updaten
-	model.param.set('xpos', KH_x(i));
-	model.param.set('ypos', KH_y(i));
+	model.param.set('Lx', KH_x(i));
+	model.param.set('Ly', KH_y(i));
 	
 	model.geom('geom1').run;
 	model.mesh('mesh1').run;
@@ -190,4 +186,21 @@ end
 clearvars h i Tv Solver Probe_rect KH_rect Keyhole_Positions
  
 toc(alltime)
- 
+
+%% Daten speichern
+range_x = 3.5:1e-2:4.5;
+range_y = -0.5:1e-2:0.5;
+range_z = -1:1e-2:0;
+
+[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+coords = [XX(:)'; YY(:)'; ZZ(:)'];
+
+Temps = mphinterp(model, {'T'}, 'dataset', 'dset40', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+
+coords = [XX(:)' - 4; YY(:)'; ZZ(:)'];
+save('Vergleich.mat', 'Temps', 'coords');
+
+
+
+
+
