@@ -187,10 +187,9 @@ for i=2:length(KH_x)
 	drawnow;
     
     %% Schnitt speichern
-    Temps = mphinterp(model, {'T'}, 'dataset', 'dset1', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
+    Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
     save(sprintf('E:/Team_H/FEM_Ergebnisse/Schnitt_%02d.mat', i), 'Temps');
 
-	
 	%% GIF Animnation erzeugen
 	frame = getframe(gcf);
 	im = frame2im(frame);
