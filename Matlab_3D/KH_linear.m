@@ -143,8 +143,8 @@ im = frame2im(frame);
 [imind,cm] = rgb2ind(im,256);
 imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
 %%%%%%%%%%%%%%
-exit
-for i=2:3%length(KH_x)
+
+for i=2:length(KH_x)
 	
 	curtime = tic;
 	
