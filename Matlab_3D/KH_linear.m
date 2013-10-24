@@ -118,7 +118,7 @@ model.result('pg').set('t', 0.1);
 
 %% Ergebnis-Schnitte vorbereiten
 range_x = 3.5:1e-2:4.5;
-range_y = zeros(1, 101);
+range_y = 0;
 range_z = -1:1e-2:0;
 
 [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
