@@ -52,8 +52,8 @@ function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt)
 	
 	Model.result('pg').set('data', new_dset);
     
-    % Neuen Zeitschritt zuzweisen
-    Model.study('std1').feature('time').set('tlist', '4e-5');
+    % Neuen Zeitschritt zuweisen
+    Model.study('std1').feature('time').set('tlist', dt);
 	
 	% Alte Solver löschen
 	if SolverIndex > 2
