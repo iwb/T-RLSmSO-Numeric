@@ -26,7 +26,6 @@ function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt)
 	New_Solver.feature.create('v1', 'Variables');
 	New_Solver.feature('v1').set('control', 'time');
 	New_Solver.feature.create('t1', 'Time');
-	New_Solver.feature('t1').set('tlist', dt);
 	New_Solver.feature('t1').set('plot', 'off');
 	New_Solver.feature('t1').set('plotfreq', 'tout');
 	New_Solver.feature('t1').set('probesel', 'all');
@@ -52,6 +51,9 @@ function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt)
 	New_Solver.feature('v1').set('solnum', 'last');
 	
 	Model.result('pg').set('data', new_dset);
+    
+    % Neuen Zeitschritt zuzweisen
+    Model.study('std1').feature('time').set('tlist', '4e-5');
 	
 	% Alte Solver löschen
 	if SolverIndex > 2
