@@ -32,7 +32,7 @@ ModelUtil.remove('Model');
 ModelUtil.showProgress(false);
 
 model = ModelUtil.create('Model');
-model.modelPath('C:\Daten\Julius_FEM\Matlab_3D');
+model.modelPath('C:/Daten/Julius_FEM/Matlab_3D');
 model.name('KH_linear.mph');
 
 model.modelNode.create('mod1');
@@ -85,9 +85,9 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', 2.5);
-model.mesh('mesh1').feature('size').set('hmin', 0.03);
+model.mesh('mesh1').feature('size').set('hmin', 0.025);
 model.mesh('mesh1').feature('size').set('hcurve', 1); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', 1.4); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hgrad', 1.3); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
@@ -116,6 +116,15 @@ model.result('pg').feature('surf1').set('colortable', 'Thermal');
 model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
+%% Ergebnis-Schnitte vorbereiten
+range_x = 3.5:1e-2:4.5;
+range_y = zeros(1, 101);
+range_z = -1:1e-2:0;
+
+[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+coords = [XX(:)'; YY(:)'; ZZ(:)'];
+
+%% Zeitmessung starten
 curtime = tic;
 
 %% Modell lösen
@@ -128,6 +137,11 @@ h1 = subplot(2, 1, 2);
 mphplot(model, 'pg', 'rangenum', 1);
 drawnow;
 
+%% Schnitt speichern
+Temps = mphinterp(model, {'T'}, 'dataset', 'dset1', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
+save('E:/Team_H/FEM_Ergebnisse/Schnitt_01.mat', 'Temps');
+
+%% Fortschritt
 itertime = toc(curtime);
 remaining = (length(KH_x) - 1) * itertime;
 fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', 1, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
@@ -171,6 +185,11 @@ for i=2:length(KH_x)
 	mphplot(model, 'pg', 'rangenum', 1);	
 	set(gca,'position',ax1); % Manually setting this holds the position with colorbar
 	drawnow;
+    
+    %% Schnitt speichern
+    Temps = mphinterp(model, {'T'}, 'dataset', 'dset1', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
+    save(sprintf('E:/Team_H/FEM_Ergebnisse/Schnitt_%02d.mat', i), 'Temps');
+
 	
 	%% GIF Animnation erzeugen
 	frame = getframe(gcf);
@@ -190,7 +209,7 @@ clearvars h i Tv Solver
 toc(alltime)
 
 %% Daten speichern
-mphsave(model, ['E:\Team_H\FEM_Ergebnisse\' char(model.name)]);
+mphsave(model, ['E:/Team_H/FEM_Ergebnisse/' char(model.name)]);
 
 range_x = 3.5:1e-2:4.5;
 range_y = -0.5:1e-2:0.5;
@@ -199,10 +218,10 @@ range_z = -1:1e-2:0;
 [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 coords = [XX(:)'; YY(:)'; ZZ(:)'];
 
-Temps = mphinterp(model, {'T'}, 'dataset', 'dset40', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+Temps = mphinterp(model, {'T'}, 'dataset', 'dset40', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');  %#ok
 
-coords = [XX(:)' - 4; YY(:)'; ZZ(:)'];
-save('Vergleich.mat', 'Temps', 'coords');
+coords = [XX(:)' - 4; YY(:)'; ZZ(:)'];  %#ok
+save('E:/Team_H/FEM_Ergebnisse/Vergleich.mat', 'Temps', 'coords');
 
 exit
 
