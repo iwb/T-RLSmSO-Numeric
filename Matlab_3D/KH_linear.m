@@ -1,5 +1,6 @@
 clear all;
 clc;
+diary('logfile.txt');
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -52,6 +53,7 @@ model.param.set('Ly', sprintf('%f [mm]', KH_y(1)));
 model.param.set('phi', '0 [°]');
 
 %% Geometrie erzeugen
+model.geom('geom1').feature('fin').set('repairtol', '1.0E-4');
 % Blech
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -Pwidth/2, -Pthickness]);
@@ -141,8 +143,8 @@ im = frame2im(frame);
 [imind,cm] = rgb2ind(im,256);
 imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
 %%%%%%%%%%%%%%
-
-for i=2:length(KH_x)
+exit
+for i=2:3%length(KH_x)
 	
 	curtime = tic;
 	
@@ -183,11 +185,13 @@ for i=2:length(KH_x)
 	fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 end
 
-clearvars h i Tv Solver Probe_rect KH_rect Keyhole_Positions
+clearvars h i Tv Solver
  
 toc(alltime)
 
 %% Daten speichern
+mphsave(model, ['E:\Team_H\FEM_Ergebnisse\' char(model.name)]);
+
 range_x = 3.5:1e-2:4.5;
 range_y = -0.5:1e-2:0.5;
 range_z = -1:1e-2:0;
@@ -200,7 +204,5 @@ Temps = mphinterp(model, {'T'}, 'dataset', 'dset40', 'coord', coords, 'Solnum', 
 coords = [XX(:)' - 4; YY(:)'; ZZ(:)'];
 save('Vergleich.mat', 'Temps', 'coords');
 
-
-
-
+exit
 
