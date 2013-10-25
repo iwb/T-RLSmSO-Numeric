@@ -1,6 +1,9 @@
-function TField =  zLayers(Alpha, A, Pe, waistSize)
-	%LayerArray = [1, linspace(floor(length(A)/4), floor(3*length(A)/4), 4), length(A)];
-	LayerArray = [1, 9, 18, 26];
+function TField =  zLayers(Radius, Center, Pe, waistSize)
+	
+    Alpha = Radius ./ waistSize;
+    A = (Center + Radius) ./ waistSize;
+
+    LayerArray = [1, 9, 18, 26, 23];
     x_range = (-0.5:1e-2:0.5) * 1e-3;
 	y_range = (-0.5:1e-2:0.5) * 1e-3;
 	
@@ -27,5 +30,7 @@ function TField =  zLayers(Alpha, A, Pe, waistSize)
 		
 		TField(:,:,k) = temp;
         k=k+1;
-	end
+    end
+    
+    TField = TField .* (3133-293.15) + 293.15;
 end
