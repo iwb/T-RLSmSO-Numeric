@@ -1,5 +1,7 @@
 clear all;
 clc;
+diary off;
+delete('logfile.txt');
 diary('logfile.txt');
 
 import com.comsol.model.*
@@ -9,7 +11,7 @@ import com.comsol.model.util.*
 Tv = 3133;
 v = 0.05 * 1e3; % [mm/s]
 
-Pwidth = 6;
+Pwidth = 4;
 Pthickness = 3;
 Plength = 10;
 
@@ -84,10 +86,10 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 %% Mesh erzeugen
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
-model.mesh('mesh1').feature('size').set('hmax', 2.5);
-model.mesh('mesh1').feature('size').set('hmin', 0.025);
-model.mesh('mesh1').feature('size').set('hcurve', 1); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', 1.3); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hmax', '3');
+model.mesh('mesh1').feature('size').set('hmin', '0.028');
+model.mesh('mesh1').feature('size').set('hcurve', '1.3'); % Kurvenradius
+model.mesh('mesh1').feature('size').set('hgrad', '1.48'); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
@@ -128,7 +130,7 @@ coords = [XX(:)'; YY(:)'; ZZ(:)'];
 curtime = tic;
 
 %% Modell lösen
-ModelUtil.showProgress(true);
+%ModelUtil.showProgress(true);
 Solver.runAll;
 model.result('pg').set('data', 'dset1');
 
@@ -198,7 +200,9 @@ for i=2:length(KH_x)
 	imwrite(imind, cm, filename,'gif','WriteMode','append');
 	%%%%%%%%%%%%%%%%%%%%
 	
-	itertime = 0.85 * itertime + 0.15 * toc(curtime);
+    thistime = toc(curtime);
+    fprintf('Iterationsdauer: %.1f Minuten\n', thistime/60);
+	itertime = 0.85 * itertime + 0.15 * thistime;
 	remaining = (length(KH_x) - i) * itertime;
 	fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 end
