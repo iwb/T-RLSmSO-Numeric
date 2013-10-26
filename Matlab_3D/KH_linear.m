@@ -1,7 +1,8 @@
-clear all;
 clc;
 diary off;
-delete('logfile.txt');
+if exist('logfile.txt', 'file')
+	delete('logfile.txt');
+end
 diary('logfile.txt');
 
 import com.comsol.model.*
@@ -15,6 +16,17 @@ Pwidth = 4;
 Pthickness = 3;
 Plength = 10;
 
+%% Koordinaten für die Speicherung
+resolution = 1e-2; % [mm]
+range_x = 0:resolution:Plength;
+range_y = 0;
+range_z = 0:-resolution:-1.5;
+
+[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+coords = [XX(:)'; YY(:)'; ZZ(:)'];
+
+
+%% Zeit- und Ortsschritte festlegen
 
 steps = 40;
 distance = 2; % [mm]
@@ -64,10 +76,6 @@ geometry.feature('blk1').set('size', [Plength, Pwidth, Pthickness]);
 load('KH_geom_metric.mat');
 createKeyhole(model, geometry, KH_geom_metric);
 
-%% Speichern
-%mphsave(model, 'd:/temp.mph');
-%return;
-
 %% Material zuweisen
 initMaterial(model);
 
@@ -87,14 +95,15 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '3');
-model.mesh('mesh1').feature('size').set('hmin', '0.028');
+model.mesh('mesh1').feature('size').set('hmin', '0.28');
 model.mesh('mesh1').feature('size').set('hcurve', '1.3'); % Kurvenradius
 model.mesh('mesh1').feature('size').set('hgrad', '1.48'); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
 
-mphmeshstats(model)
+stats = mphmeshstats(model);
+fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 
 subplot(2, 1, 1);
 mphmesh(model);
@@ -104,7 +113,7 @@ input('Generated Mesh. Enter to continue...');
 
 alltime = tic;
 
-%% Solver konfigurieren
+%% Ersten Solver konfigurieren
 model.study('std1').feature('time').set('tlist', dt(1));
 Solver = initSolver(model, dt(1));
 
@@ -118,19 +127,14 @@ model.result('pg').feature('surf1').set('colortable', 'Thermal');
 model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
-%% Ergebnis-Schnitte vorbereiten
-range_x = 3.5:1e-2:4.5;
-range_y = 0;
-range_z = -1:1e-2:0;
 
-[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
-coords = [XX(:)'; YY(:)'; ZZ(:)'];
+i = 1; % Loop-runrolling für die erste Iteration
 
 %% Zeitmessung starten
 curtime = tic;
 
 %% Modell lösen
-%ModelUtil.showProgress(true);
+ModelUtil.showProgress(true);
 Solver.runAll;
 model.result('pg').set('data', 'dset1');
 
@@ -140,25 +144,26 @@ mphplot(model, 'pg', 'rangenum', 1);
 drawnow;
 
 %% Schnitt speichern
-Temps = mphinterp(model, {'T'}, 'dataset', 'dset1', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
-save('E:/Team_H/FEM_Ergebnisse/Schnitt_01.mat', 'Temps');
+saveSection(model, i, coords);
 
 %% Fortschritt
 itertime = toc(curtime);
-remaining = (length(KH_x) - 1) * itertime;
-fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', 1, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
+remaining = (length(KH_x) - i) * itertime;
+fprintf('Progress: %2d/%2d, %4.1f minutes remaining (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 
 %Next 3 lines of code are intended to stop the subplots from shrinking 
 %while using colorbar, standard bug in matlab.
 ax1 = get(h1,'position'); % Save the position as ax
 
 %% GIF, erster Frame
-filename = './animation.gif';
+filename = '../Ergebnisse/animation.gif';
 frame = getframe(gcf);
 im = frame2im(frame);
 [imind,cm] = rgb2ind(im,256);
 imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
 %%%%%%%%%%%%%%
+
+clear getnextSolver;
 
 for i=2:length(KH_x)
 	
@@ -173,6 +178,9 @@ for i=2:length(KH_x)
 	
 	model.geom('geom1').run;
 	model.mesh('mesh1').run;
+	
+	stats = mphmeshstats(model);
+	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 
 	%% Mesh plotten
 	subplot(2, 1, 1);
@@ -189,10 +197,9 @@ for i=2:length(KH_x)
 	drawnow;
     
     %% Schnitt speichern
-    Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
-    save(sprintf('E:/Team_H/FEM_Ergebnisse/Schnitt_%02d.mat', i), 'Temps');
-
-	%% GIF Animnation erzeugen
+	saveSection(model, i, coords);
+	
+	%% GIF Animation erzeugen
 	frame = getframe(gcf);
 	im = frame2im(frame);
 	[imind,cm] = rgb2ind(im,256);
@@ -204,7 +211,7 @@ for i=2:length(KH_x)
     fprintf('Iterationsdauer: %.1f Minuten\n', thistime/60);
 	itertime = 0.85 * itertime + 0.15 * thistime;
 	remaining = (length(KH_x) - i) * itertime;
-	fprintf('Fortschritt: %2d/%2d, noch %4.1f Minuten (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
+	fprintf('Progress: %2d/%2d, %4.1f minutes remaining (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 end
 
 clearvars h i Tv Solver
@@ -221,10 +228,10 @@ range_z = -1:1e-2:0;
 [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 coords = [XX(:)'; YY(:)'; ZZ(:)'];
 
-Temps = mphinterp(model, {'T'}, 'dataset', 'dset40', 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');  %#ok
+Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');  %#ok
 
 coords = [XX(:)' - 4; YY(:)'; ZZ(:)'];  %#ok
-save('E:/Team_H/FEM_Ergebnisse/Vergleich.mat', 'Temps', 'coords');
+save('../Ergebnisse/FinalTemps.mat', 'Temps', 'coords');
 
 exit
 
