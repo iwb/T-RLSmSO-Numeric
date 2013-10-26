@@ -1,9 +1,12 @@
 clc;
 diary off;
-if exist('logfile.txt', 'file')
-	delete('logfile.txt');
+logfile = '../Ergebnisse/diary.log';
+giffilename = '../Ergebnisse/animation.gif';
+
+if exist(logfile, 'file')
+	delete(logfile);
 end
-diary('logfile.txt');
+diary(logfile);
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -156,11 +159,10 @@ fprintf('Progress: %2d/%2d, %4.1f minutes remaining (%s).\n', i, length(KH_x), r
 ax1 = get(h1,'position'); % Save the position as ax
 
 %% GIF, erster Frame
-filename = '../Ergebnisse/animation.gif';
 frame = getframe(gcf);
 im = frame2im(frame);
 [imind,cm] = rgb2ind(im,256);
-imwrite(imind,cm,filename,'gif', 'Loopcount',inf);
+imwrite(imind,cm,giffilename,'gif', 'Loopcount',inf);
 %%%%%%%%%%%%%%
 
 clear getnextSolver;
@@ -204,11 +206,11 @@ for i=2:length(KH_x)
 	im = frame2im(frame);
 	[imind,cm] = rgb2ind(im,256);
 
-	imwrite(imind, cm, filename,'gif','WriteMode','append');
+	imwrite(imind, cm, giffilename,'gif','WriteMode','append');
 	%%%%%%%%%%%%%%%%%%%%
 	
     thistime = toc(curtime);
-    fprintf('Iterationsdauer: %.1f Minuten\n', thistime/60);
+    fprintf('Iteration was finished in %.1f minutes\n', thistime/60);
 	itertime = 0.85 * itertime + 0.15 * thistime;
 	remaining = (length(KH_x) - i) * itertime;
 	fprintf('Progress: %2d/%2d, %4.1f minutes remaining (%s).\n', i, length(KH_x), remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
@@ -219,7 +221,7 @@ clearvars h i Tv Solver
 toc(alltime)
 
 %% Daten speichern
-mphsave(model, ['E:/Team_H/FEM_Ergebnisse/' char(model.name)]);
+mphsave(model, ['../Ergebnisse/' char(model.name)]);
 
 range_x = 3.5:1e-2:4.5;
 range_y = -0.5:1e-2:0.5;
