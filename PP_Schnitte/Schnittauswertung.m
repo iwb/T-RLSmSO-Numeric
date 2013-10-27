@@ -5,15 +5,16 @@ clc;
 figure;
 hold all;
 
-for i=12:4:steps
-   filename = sprintf('D:/FEM_Ergebnisse/Schnitt_%02d.mat', i);  
+x_center = KH_x(end);
+
+for i=1:steps
+   filename = sprintf('../Ergebnisse/Section_%02d.mat', i);  
    load(filename);
-    
-   Feld = reshape(Temps, 101, 101);
-   Feld = Feld(:, end:-1:1);
-   Tline = Feld(:, 1);
-   xval = (1:101) + 100*(4-KH_x(i));
+   
+   Feld = reshape(Temps, 401, 1, 151);
+   Tline = Feld(:, 1, 1);
+   xval = range_x - KH_x(i) + 2;
    
    plot(xval, Tline);
-   xlim([1 101])
+   xlim([0 3])
 end

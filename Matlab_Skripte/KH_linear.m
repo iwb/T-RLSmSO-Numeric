@@ -12,6 +12,7 @@ saveSections = true;
 savePool = true;
 saveFinalTemps = true;
 saveVideo = true;
+showPlot = true;
 saveMph = true;
 showComsolProgress = true;
 
@@ -41,6 +42,8 @@ if (saveSections)
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
+	
+	save('../Ergebnisse/Section_Coords.mat', 'range_x', 'range_y', 'range_z');
 	clear resolution range_x range_y range_z XX YY ZZ
 end
 
@@ -69,6 +72,7 @@ dt(end + 1) = dx_last/v;
 
 KH_y = zeros(size(KH_x));
 %plot(KH_x, KH_y, 'o-');
+save('../Ergebnisse/KH_Coords.mat', 'KH_x', 'KH_y', 'dt');
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
@@ -236,18 +240,22 @@ for i=2:length(KH_x)
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 	
 	%% Mesh plotten
-	subplot(2, 1, 1);
-	mphmesh(model);
-	drawnow;
+	if (showPlot)
+		subplot(2, 1, 1);
+		mphmesh(model);
+		drawnow;
+	end
 	
 	%% Modell Lösen
 	Solver.runAll;
 	
 	%% Temperaturfeld Plotten
-	subplot(2, 1, 2);
-	mphplot(model, 'pg', 'rangenum', 1);
-	set(gca,'position',ax1); % Manually setting this holds the position with colorbar
-	drawnow;
+	if (showPlot)
+		subplot(2, 1, 2);
+		mphplot(model, 'pg', 'rangenum', 1);
+		set(gca,'position',ax1); % Manually setting this holds the position with colorbar
+		drawnow;
+	end
 	
 	%% Schnitt speichern
 	if (saveSections)
@@ -303,9 +311,9 @@ if (saveFinalTemps)
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];
 	
-	Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(length(KH_x))], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(length(KH_x))], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 	
-	save('../Ergebnisse/FinalTemps.mat', 'Temps', 'finalCoords');
+	save('../Ergebnisse/FinalTemps.mat', 'FinalTemps', 'finalCoords');
 end
 
 diary off
