@@ -9,12 +9,12 @@ sectionPath = [output_path '../Ergebnisse/Section_%02d.mat'];
 poolPath = '../Ergebnisse/Pool.mat';
 
 saveSections = true;
-savePool = true;
+savePool = false;
 saveFinalTemps = true;
-saveVideo = true;
-showPlot = true;
+saveVideo = false;
+showPlot = false;
 saveMph = true;
-showComsolProgress = true;
+showComsolProgress = false;
 
 if exist(logPath, 'file')
 	delete(logPath);
@@ -29,13 +29,13 @@ Tv = 3133; % [K]
 Tmelt = 1900; % [K]
 v = 0.05 * 1e3; % [mm/s]
 
-Pwidth = 1;
-Pthickness = 2;
-Plength = 4;
+Pwidth = 4;
+Pthickness = 3;
+Plength = 10;
 
 %% Koordinaten für die Sections
 if (saveSections)
-	resolution = 10e-3; % [mm]
+	resolution = 5e-3; % [mm]
 	range_x = 0:resolution:Plength;
 	range_y = 0;
 	range_z = 0:-resolution:-1.5;
@@ -61,17 +61,18 @@ end
 
 %% Zeit- und Ortsschritte festlegen
 
-steps = 30;
-distance = 2; % [mm]
-dx_last = 2e-3;
+steps = 40;
+distance = 2.5; % [mm]
+dx_last = 3e-2;
 cc = [steps, -steps^2; 1, -2*steps] \ [distance; dx_last];
-KH_x = 0.5 + cc(1) * (1:steps) - cc(2) * (1:steps).^2; % [mm]
+KH_x = 2 + cc(1) * (1:steps) - cc(2) * (1:steps).^2; % [mm]
 
 dt = diff(KH_x) ./ v;
 dt(end + 1) = dx_last/v;
 
 KH_y = zeros(size(KH_x));
-%plot(KH_x, KH_y, 'o-');
+%	plot(KH_x, KH_y, 'o-');
+%	plot(KH_x, 'o-');
 save('../Ergebnisse/KH_Coords.mat', 'KH_x', 'KH_y', 'dt');
 
 %% Eventuelle Modelle entfernen
@@ -131,7 +132,7 @@ model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '3');
 model.mesh('mesh1').feature('size').set('hmin', '0.028');
 model.mesh('mesh1').feature('size').set('hcurve', '1.2'); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', '1.38'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hgrad', '1.28'); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
@@ -182,9 +183,11 @@ Solver.runAll;
 model.result('pg').set('data', 'dset1');
 
 %% Temperaturfeld Plotten
-h1 = subplot(2, 1, 2);
-mphplot(model, 'pg', 'rangenum', 1);
-drawnow;
+if (showPlot)
+	h1 = subplot(2, 1, 2);
+	mphplot(model, 'pg', 'rangenum', 1);
+	drawnow;
+end
 
 %% Schnitt speichern
 if (saveSections)
@@ -204,12 +207,12 @@ fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, length(KH_x), ite
 fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 
 
-%% Next 3 lines of code are intended to stop the subplots from shrinking
-%  while using colorbar, standard bug in matlab.
-ax1 = get(h1,'position'); % Save the position as ax
-
 %% GIF, erster Frame
 if (saveVideo)
+% Next line of code are intended to stop the subplots from shrinking
+% while using colorbar, standard bug in matlab.
+	ax1 = get(h1,'position'); % Save the position as ax
+	
 	frame = getframe(gcf);
 	im = frame2im(frame);
 	[imind,cm] = rgb2ind(im, 256);
