@@ -38,13 +38,12 @@ A0 = vhp1 / param.w0; % VHP an der Blechoberfläche
 alpha0 = ((vhp1 - vhp2)^2 + versatz^2) / (2 * (vhp1 - vhp2)) / config.las.WaistSize;
 
 %% Skalierung und Diskretisierung
-
 % Diskretisierung der z-Achse
-dz = -zResolution * 1e-6;
+dz = zResolution * -1e-6;
 d_zeta = dz / param.w0;
 
 % Blechdicke
-max_z = 5e-3;
+max_z = config.dis.SampleThickness;
 max_zindex = ceil(max_z/-dz);
 
 Apex = NaN(max_zindex, 1);
