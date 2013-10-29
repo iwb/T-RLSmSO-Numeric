@@ -132,7 +132,7 @@ model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '3');
 model.mesh('mesh1').feature('size').set('hmin', '0.028');
 model.mesh('mesh1').feature('size').set('hcurve', '1.2'); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', '1.28'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hgrad', '1.35'); % Maximale Wachstumsrate
 model.mesh('mesh1').run;
 
 %% Mesh plotten
