@@ -9,7 +9,7 @@ function [ config ] = initConfig()
 	config.las.WaistSize = 50e-6;		% [m]
 	
 	config.osz.Amplitude = 0.3e-3;		% [m]
-	config.osz.Frequency = 30;			% [Hz]
+	config.osz.Frequency = 300;			% [Hz]
 	config.osz.FeedVelocity = 16e-3;	% [m/s]
 	config.osz.Power = 1000;			% [W]
 	config.osz.Focus = 0;				% [m] above Surface
@@ -24,6 +24,7 @@ function [ config ] = initConfig()
 	config.dis.Curvature = 0.5;			% [-]
 	config.dis.GrowthRate = 1.35;		% [-]
 	
+	config.mat.UseSysweld = true;		% Use T-dependent material (will ignore constants)
 	config.mat.ThermalConductivity  = 33.63;   % Wärmeleitfähigkeit [W/(mK)]
     config.mat.Density = 7033;                 % Dichte [kg/m³]
 	config.mat.HeatCapacity = 711.4;           % spezifische Wärmekapazität [J/(kgK)]
