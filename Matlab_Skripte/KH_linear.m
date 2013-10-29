@@ -302,7 +302,7 @@ end
 
 % Pool speichern
 if (savePool)
-	save('../Ergebnisse/Pool.mat', 'Pool', 'poolCoords');
+	save(poolPath, 'Pool', 'poolCoords');
 end
 
 if (saveFinalTemps)
@@ -314,7 +314,7 @@ if (saveFinalTemps)
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];
 	
-	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(length(KH_x))], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 	
 	save('../Ergebnisse/FinalTemps.mat', 'FinalTemps', 'finalCoords');
 end
