@@ -97,8 +97,7 @@ geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -Pwidth/2, -Pthickness]);
 geometry.feature('blk1').set('size', [Plength, Pwidth, Pthickness]);
 % Keyhole
-load('KH_geom_metric.mat');
-createKeyhole(model, geometry, KH_geom_metric);
+createKeyhole(model, geometry, config);
 
 %% Material zuweisen
 initMaterial(model);
