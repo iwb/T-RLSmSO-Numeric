@@ -1,4 +1,6 @@
-function createKeyhole(model, geometry, khg)
+function createKeyhole(model, geometry, config, speed)
+
+khg = calcKeyhole(config.dis.KeyholeResolution, speed, config.mat.AmbientTemperature, config);
 
 % Adjust the circle centers for the angle
 CenterArray = khg(2, :);

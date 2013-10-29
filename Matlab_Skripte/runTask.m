@@ -28,10 +28,6 @@ import com.comsol.model.util.*
 
 %% Parameter für das Modell
 
-Pwidth = 4;
-Pthickness = 3;
-Plength = 10;
-
 %% Koordinaten für die Sections
 if (saveSections)
 	resolution = 5e-3; % [mm]
@@ -60,7 +56,7 @@ end
 
 %% Zeit- und Ortsschritte festlegen
 
-createTrajectory(config);
+[KH_x, KH_y, speedArray, dt] = createTrajectory(config);
 
 save('../Ergebnisse/KH_Coords.mat', 'KH_x', 'KH_y', 'dt');
 
@@ -97,7 +93,7 @@ geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -Pwidth/2, -Pthickness]);
 geometry.feature('blk1').set('size', [Plength, Pwidth, Pthickness]);
 % Keyhole
-createKeyhole(model, geometry, config);
+createKeyhole(model, geometry, config, speedArray(1));
 
 %% Material zuweisen
 initMaterial(model);

@@ -1,15 +1,20 @@
-function [ KH_x, KH_y, dt ] = createTrajectory( config )
+function [ KH_x, KH_y, speedArray, dt ] = createTrajectory( config )
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
 	tArray = linspace(0, config.sim.Oscillations / config.osz.Frequency, config.sim.TimeSteps);
-
 	pArray =  linspace(0, 2*pi*config.sim.Oscillations, config.sim.TimeSteps);
 
 	KH_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
 	KH_y = config.osz.Amplitude * sin(pArray); % [m]
 	%plot(KH_x, KH_y, 'o-');
+    
+    factor = 2*pi * config.osz.Frequency * config.osz.Amplitude;
+    vx = config.osz.FeedVelocity + factor .* sin(pArray);
+    vy = factor .* cos(pArray);
+    
+    speedArray = sqrt(vx.^2 + vy.^2);
 	
 	dt = ones(1, config.sim.TimeSteps) .* ...
 		config.sim.Oscillations / (config.osz.Frequency * config.sim.TimeSteps);
