@@ -1,4 +1,4 @@
-function [ KH_x, KH_y, speedArray, dt ] = createTrajectory( config )
+function [ KH_x, KH_y, phiArray, speedArray, dt ] = createTrajectory( config )
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -14,6 +14,7 @@ function [ KH_x, KH_y, speedArray, dt ] = createTrajectory( config )
     vx = config.osz.FeedVelocity + factor .* sin(pArray);
     vy = factor .* cos(pArray);
     
+	phiArray = atan2(vy, vx);
     speedArray = sqrt(vx.^2 + vy.^2);
 	
 	dt = ones(1, config.sim.TimeSteps) .* ...

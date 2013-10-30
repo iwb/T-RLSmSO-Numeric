@@ -1,9 +1,9 @@
-function runTask(config)
+%function runTask(config)
 
 clc;
 diary off;
 
-output_path = '../Ergebnisse/';
+output_path = './Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
 gifPath = [output_path '../Ergebnisse/animation.gif'];
@@ -31,9 +31,9 @@ import com.comsol.model.util.*
 %% Koordinaten für die Sections
 if (saveSections)
 	resolution = 5e-3; % [mm]
-	range_x = 0:resolution:Plength;
+	range_x = 0 : resolution : config.dis.SampleLength;	
 	range_y = 0;
-	range_z = 0:-resolution:-1.5;
+	range_z = 0 : -resolution : -1.5;
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -45,9 +45,9 @@ end
 %% Koordinaten für den Pool
 if (savePool)
 	resolution = 100e-3; % [mm]
-	range_x = 0 : resolution : Plength;
-	range_y = -Pwidth/2 : resolution : Pwidth/2;
-	range_z = 0 : -resolution : -Pthickness;
+	range_x = 0 : resolution : config.dis.SampleLength;
+	range_y = -config.dis.SampleWidth/2 : resolution : config.dis.SampleWidth/2;
+	range_z = 0 : -resolution : -config.dis.SampleThickness;
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -56,7 +56,7 @@ end
 
 %% Zeit- und Ortsschritte festlegen
 
-[KH_x, KH_y, speedArray, dt] = createTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt] = createTrajectory(config);
 
 save('../Ergebnisse/KH_Coords.mat', 'KH_x', 'KH_y', 'dt');
 
@@ -84,16 +84,16 @@ model.study('std1').feature('time').activate('ht', true);
 % Keyholeposition festlegen
 model.param.set('Lx', sprintf('%f [mm]', KH_x(1)));
 model.param.set('Ly', sprintf('%f [mm]', KH_y(1)));
-model.param.set('phi', '0 [°]');
+model.param.set('phi', phiArray(1));
 
 %% Geometrie erzeugen
 model.geom('geom1').feature('fin').set('repairtol', '1.0E-4');
 % Blech
 geometry.feature.create('blk1', 'Block');
-geometry.feature('blk1').set('pos', [0, -Pwidth/2, -Pthickness]);
-geometry.feature('blk1').set('size', [Plength, Pwidth, Pthickness]);
+geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
+geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
 % Keyhole
-createKeyhole(model, geometry, config, speedArray(1));
+createKeyhole(model, geometry, speedArray(1), config);
 
 %% Material zuweisen
 initMaterial(model);
@@ -219,6 +219,9 @@ for i=2:length(KH_x)
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
+	model.param.set('phi', phiArray(i));
+	
+	updateKeyhole(model, geometry, speedArray, config.mat.AmbientTemperature, config)
 	
 	model.geom('geom1').run;
 	model.mesh('mesh1').run;
@@ -310,4 +313,4 @@ if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
 	exit
 end
 
-end
+%end

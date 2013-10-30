@@ -1,20 +1,21 @@
-function createKeyhole(model, geometry, config, speed)
+function createKeyhole(model, geometry, speed, config)
 
 khg = calcKeyhole(config.dis.KeyholeResolution, speed, config.mat.AmbientTemperature, config);
 
-% Adjust the circle centers for the angle
 CenterArray = khg(2, :);
 % Calculate the differences of the centers
 DisplacementArray = diff(CenterArray);
 RadiusArray = khg(3, :);
 RatioArray = RadiusArray(2:end) ./ RadiusArray(1:end-1);
 HeightArray = - diff(khg(1, :));
-tag = 1;
+tag = 0;
 
 for i = 1:size(CenterArray, 2)-1
 	% This loops over every gap between two circles. Therefore, the top
 	% circle is at i and the bottom circle is at i+1.
     	
+	tag = tag + 1;
+	
 	% Position of top circle, relative to the laser center
     pos = {sprintf('Lx + cos(phi) * %.12e [m]', CenterArray(i)), ...
 		sprintf('Ly + sin(phi) * %.12e [m]', CenterArray(i)), ...
@@ -36,8 +37,6 @@ for i = 1:size(CenterArray, 2)-1
 		cone.set('displ', [-DisplacementArray(i) * 1e3, 0]);
 		cone.set('rat', ratio);
 		cone.set('rot', '-phi');
-
-		tag = tag + 1;
 		
 	else % Bad condition	
 				
@@ -53,19 +52,17 @@ for i = 1:size(CenterArray, 2)-1
 		cone.set('displ', [-displ * 1e3, 0]);
 		cone.set('rat', '0');
 		cone.set('rot', '-phi');
-
-		tag = tag + 1;
 		
 		break;
 	end
 end
 
-fprintf('Keyhole was build out of %d elements.\n', tag-1);
+fprintf('Keyhole was build out of %d elements.\n', tag);
 
 geometry.run; % Damit die Selektion funktioniert...
 
 model.selection.create('KH_Domain', 'Explicit');
-model.selection('KH_Domain').set(2:tag);
+model.selection('KH_Domain').set(2:tag+1);
 model.selection('KH_Domain').name('Keyhole_Domain');
 
 model.selection.create('KH_Bounds', 'Adjacent');
