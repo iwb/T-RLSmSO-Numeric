@@ -59,9 +59,17 @@ zindex = 0;
 currentA = A0;
 currentAlpha = alpha0;
 
+refinement = 2;
+KH_geom = zeros(3, max_zindex);
+
 %% Schleife über die Tiefe
 while (true)
 	
+    if (-d_zeta / currentAlpha > 8) && (refinement > 0)
+        refinement = refinement - 1;
+        d_zeta = d_zeta/2;
+    end
+    
 	zindex = zindex + 1;
 	prevZeta = zeta;
 	zeta = zeta + d_zeta;
@@ -114,12 +122,13 @@ while (true)
 	end
 	
 	% Werte übernehmen und sichern
+    KH_geom(1, zindex+1) = zeta;
 	Apex(zindex) = currentA;
 	Radius(zindex) = currentAlpha;
 end
 zindex = zindex - 1;
 
-KH_geom(1, :) = (0:zindex) * d_zeta;
+KH_geom = KH_geom(:, 1:zindex+1);
 KH_geom(2:3, 1) = [A0 - alpha0; alpha0];
 KH_geom(2, 2:end) = Apex(1:zindex) - Radius(1:zindex);
 KH_geom(3, 2:end) = Radius(1:zindex);

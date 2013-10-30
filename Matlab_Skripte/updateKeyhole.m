@@ -14,7 +14,7 @@ HeightArray = - diff(khg(1, :));
 persistent maxTag;
 
 if isempty(maxTag)
-	maxTag = 16;
+	maxTag = 0;
 end
 
 for i = 1:size(CenterArray, 2)-1
@@ -27,8 +27,8 @@ for i = 1:size(CenterArray, 2)-1
 		sprintf('Ly + sin(phi) * %.12e [m]', CenterArray(i)), ...
 		sprintf('%.12e [m]', khg(1, i))};	
 		
-    r = RadiusArray(i) * 1e3;
-	height = HeightArray(i) * 1e3;
+    r = RadiusArray(i);
+	height = HeightArray(i);
 	
 	% Maybe there is already a cone there, we just need to update...
 	if (i > maxTag)
@@ -46,22 +46,21 @@ for i = 1:size(CenterArray, 2)-1
 		cone.set('semiaxes', [r, r]);
 		cone.set('pos', pos);
 		cone.set('h', height_str);
-		cone.set('displ', [-DisplacementArray(i) * 1e3, 0]);
+		cone.set('displ', [-DisplacementArray(i), 0]);
 		cone.set('rat', ratio);
 		cone.set('rot', '-phi');
 		
 	else % Bad condition	
 				
-		height = (khg(1, i) - khg(1, end)) * 1e3;
+		height = (khg(1, i) - khg(1, end));
 		height_str = sprintf('%.12e', height);
 		displ = CenterArray(end) - CenterArray(i);
 
-		cone = geometry.feature.create(['econ_' num2str(i)], 'ECone');
 		cone.set('axis', [0, 0, -1]);
 		cone.set('semiaxes', [r, r]);
 		cone.set('pos', pos);
 		cone.set('h', height_str);
-		cone.set('displ', [-displ * 1e3, 0]);
+		cone.set('displ', [-displ, 0]);
 		cone.set('rat', '0');
 		cone.set('rot', '-phi');
 		
@@ -70,21 +69,28 @@ for i = 1:size(CenterArray, 2)-1
 end
 
 % Remove unused cones
-for i = i+1 : size(CenterArray, 2)-1
-	model.geom('geom1').feature(['econ_' num2str(i)]).active(false);
+for j = i+1 : maxTag
+	model.geom('geom1').feature(['econ_' num2str(j)]).remove();
 end
 
 fprintf('Keyhole was build out of %d elements.\n', i);
 
 geometry.run; % Damit die Selektion funktioniert...
 
-model.selection.create('KH_Domain', 'Explicit');
+
+if (maxTag == 0)
+    model.selection.create('KH_Domain', 'Explicit');
+end
+
 model.selection('KH_Domain').set(2:i+1);
 model.selection('KH_Domain').name('Keyhole_Domain');
 
-model.selection.create('KH_Bounds', 'Adjacent');
-model.selection('KH_Bounds').set('input', 'KH_Domain');
-model.selection('KH_Bounds').name('Keyhole_Bounds');
+if (maxTag == 0)
+    model.selection.create('KH_Bounds', 'Adjacent');
+    model.selection('KH_Bounds').set('input', 'KH_Domain');
+    model.selection('KH_Bounds').name('Keyhole_Bounds');
+end
 
+maxTag = i;
 end
 

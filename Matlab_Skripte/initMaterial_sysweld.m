@@ -1,4 +1,4 @@
-function initMaterial_sysweld(model)
+function initMaterial_sysweld( model )
 
 	mat = model.material.create('mat1');
 	mat.name('Edelstahl 1.4301');

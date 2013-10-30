@@ -3,20 +3,14 @@
 clc;
 diary off;
 
+config = initConfig;
+
 output_path = './Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
-gifPath = [output_path '../Ergebnisse/animation.gif'];
-sectionPath = [output_path '../Ergebnisse/Section_%02d.mat'];
-poolPath = '../Ergebnisse/Pool.mat';
-
-saveSections = true;
-savePool = true;
-saveFinalTemps = true;
-saveMph = true;
-saveVideo = true;
-showPlot = true;
-showComsolProgress = true;
+gifPath = [output_path 'animation.gif'];
+sectionPath = [output_path 'Section_%02d.mat'];
+poolPath = 'Pool.mat';
 
 if exist(logPath, 'file')
 	delete(logPath);
@@ -29,7 +23,7 @@ import com.comsol.model.util.*
 %% Parameter für das Modell
 
 %% Koordinaten für die Sections
-if (saveSections)
+if (config.sim.saveSections)
 	resolution = 5e-3; % [mm]
 	range_x = 0 : resolution : config.dis.SampleLength;	
 	range_y = 0;
@@ -38,12 +32,12 @@ if (saveSections)
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
 	
-	save('../Ergebnisse/Section_Coords.mat', 'range_x', 'range_y', 'range_z');
+	save([output_path 'Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
 	clear resolution range_x range_y range_z XX YY ZZ
 end
 
 %% Koordinaten für den Pool
-if (savePool)
+if (config.sim.savePool)
 	resolution = 100e-3; % [mm]
 	range_x = 0 : resolution : config.dis.SampleLength;
 	range_y = -config.dis.SampleWidth/2 : resolution : config.dis.SampleWidth/2;
@@ -58,7 +52,7 @@ end
 
 [KH_x, KH_y, phiArray, speedArray, dt] = createTrajectory(config);
 
-save('../Ergebnisse/KH_Coords.mat', 'KH_x', 'KH_y', 'dt');
+save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
@@ -66,7 +60,7 @@ ModelUtil.remove('Model');
 ModelUtil.showProgress(false);
 
 model = ModelUtil.create('Model');
-model.modelPath('C:/Daten/Julius_FEM/Matlab_3D');
+%model.modelPath('C:/Daten/Julius_FEM/Matlab_3D');
 model.name('KH_linear.mph');
 
 model.modelNode.create('mod1');
@@ -82,9 +76,9 @@ model.study('std1').feature.create('time', 'Transient');
 model.study('std1').feature('time').activate('ht', true);
 
 % Keyholeposition festlegen
-model.param.set('Lx', sprintf('%f [mm]', KH_x(1)));
-model.param.set('Ly', sprintf('%f [mm]', KH_y(1)));
-model.param.set('phi', phiArray(1));
+model.param.set('Lx', KH_x(1));
+model.param.set('Ly', KH_y(1));
+model.param.set('phi', sprintf('%.12e [rad]', phiArray(1)));
 
 %% Geometrie erzeugen
 model.geom('geom1').feature('fin').set('repairtol', '1.0E-4');
@@ -93,10 +87,11 @@ geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
 geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
 % Keyhole
+clear updateKeyhole;
 createKeyhole(model, geometry, speedArray(1), config);
 
 %% Material zuweisen
-initMaterial(model);
+initMaterial(model, config);
 
 %% Randbedingungen setzen
 % Keyhole Innenraum
@@ -117,6 +112,9 @@ model.mesh('mesh1').feature('size').set('hmax', '3');
 model.mesh('mesh1').feature('size').set('hmin', '0.028');
 model.mesh('mesh1').feature('size').set('hcurve', '1.2'); % Kurvenradius
 model.mesh('mesh1').feature('size').set('hgrad', '1.35'); % Maximale Wachstumsrate
+
+
+ModelUtil.showProgress(config.sim.showComsolProgress);
 model.mesh('mesh1').run;
 
 %% Mesh plotten
@@ -147,7 +145,7 @@ model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
 %% Pool initialisieren
-if (savePool)
+if (config.sim.savePool)
 	Pool = false(1, size(poolCoords, 2));
 end
 
@@ -162,24 +160,23 @@ i = 1; % Loop-runrolling für die erste Iteration
 fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt(i)*1e3);
 
 %% Modell lösen
-ModelUtil.showProgress(showComsolProgress);
 Solver.runAll;
 model.result('pg').set('data', 'dset1');
 
 %% Temperaturfeld Plotten
-if (showPlot)
+if (config.sim.showPlot)
 	h1 = subplot(2, 1, 2);
 	mphplot(model, 'pg', 'rangenum', 1);
 	drawnow;
 end
 
 %% Schnitt speichern
-if (saveSections)
+if (config.sim.saveSections)
 	saveSection(model, i, sectionCoords, sectionPath);
 end
 
 %% Pool kumulieren
-if (savePool)
+if (config.sim.savePool)
 	Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 	Pool = Pool | (Temps > config.mat.MeltingTemperature);
 end
@@ -192,7 +189,7 @@ fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datest
 
 
 %% GIF, erster Frame
-if (saveVideo)
+if (config.sim.saveVideo)
 % Next line of code are intended to stop the subplots from shrinking
 % while using colorbar, standard bug in matlab.
 	ax1 = get(h1,'position'); % Save the position as ax
@@ -219,7 +216,7 @@ for i=2:length(KH_x)
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
-	model.param.set('phi', phiArray(i));
+	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
 	
 	updateKeyhole(model, geometry, speedArray, config.mat.AmbientTemperature, config)
 	
@@ -230,7 +227,7 @@ for i=2:length(KH_x)
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 	
 	%% Mesh plotten
-	if (showPlot)
+	if (config.sim.showPlot)
 		subplot(2, 1, 1);
 		mphmesh(model);
 		drawnow;
@@ -240,7 +237,7 @@ for i=2:length(KH_x)
 	Solver.runAll;
 	
 	%% Temperaturfeld Plotten
-	if (showPlot)
+	if (config.sim.showPlot)
 		subplot(2, 1, 2);
 		mphplot(model, 'pg', 'rangenum', 1);
 		set(gca,'position',ax1); % Manually setting this holds the position with colorbar
@@ -248,18 +245,18 @@ for i=2:length(KH_x)
 	end
 	
 	%% Schnitt speichern
-	if (saveSections)
+	if (config.sim.saveSections)
 		saveSection(model, i, sectionCoords, sectionPath);
 	end
 	
 	%% Pool kumulieren
-	if (savePool)
+	if (config.sim.savePool)
 		Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 		Pool = Pool | (Temps > config.mat.MeltingTemperature);
 	end
 	
 	%% GIF Animation erzeugen
-	if (saveVideo)
+	if (config.sim.saveVideo)
 		frame = getframe(gcf);
 		im = frame2im(frame);
 		[imind,cm] = rgb2ind(im,256);
@@ -283,16 +280,16 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 
 
 %% Daten speichern
-if (saveMph)
+if (config.sim.saveMph)
 	mphsave(model, ['../Ergebnisse/' char(model.name)]);
 end
 
 % Pool speichern
-if (savePool)
+if (config.sim.savePool)
 	save(poolPath, 'Pool', 'poolCoords');
 end
 
-if (saveFinalTemps)
+if (config.sim.saveFinalTemps)
 	resolution = 50e-3; % [mm]
 	range_x = 0 : resolution :Plength;
 	range_y = -0.5 : resolution : 0.5;
