@@ -81,7 +81,7 @@ model.param.set('Ly', KH_y(1));
 model.param.set('phi', sprintf('%.12e [rad]', phiArray(1)));
 
 %% Geometrie erzeugen
-model.geom('geom1').feature('fin').set('repairtol', '1.0E-2');
+model.geom('geom1').feature('fin').set('repairtol', '1.0E-6');
 % Blech
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
@@ -109,9 +109,9 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '3 [mm]');
-model.mesh('mesh1').feature('size').set('hmin', '30 [µm]');
-model.mesh('mesh1').feature('size').set('hcurve', '1.2'); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', '1.38'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hmin', '10 [µm]');
+model.mesh('mesh1').feature('size').set('hcurve', '0.9'); % Kurvenradius
+model.mesh('mesh1').feature('size').set('hgrad', '1.24'); % Maximale Wachstumsrate
 
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
@@ -218,7 +218,7 @@ for i=2:2%length(KH_x)
 	model.param.set('Ly', KH_y(i));
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
 	
-	updateKeyhole(model, geometry, speedArray, config.mat.AmbientTemperature, config)
+	updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config)
 	
 	model.geom('geom1').run;
 	model.mesh('mesh1').run;

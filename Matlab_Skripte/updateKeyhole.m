@@ -30,6 +30,11 @@ for i = 1:size(CenterArray, 2)-1
     r = RadiusArray(i);
 	height = HeightArray(i);
 	
+	if (height/r > 10) % Bad condition
+		i = i - 1;
+		break;
+	end
+	
 	% Maybe there is already a cone there, we just need to update...
 	if (i > maxTag)
 		cone = geometry.feature.create(['econ_' num2str(i)], 'ECone');
@@ -37,40 +42,21 @@ for i = 1:size(CenterArray, 2)-1
 		cone = geometry.feature(['econ_' num2str(i)]);
 	end
 	
-	if (height/r < 10) % Acceptable condition
-		
-		ratio = RatioArray(i);
-		height_str = sprintf('%.12e', height);
+	ratio = RatioArray(i);
+	height_str = sprintf('%.12e', height);
 
-		cone.set('axis', [0, 0, -1]);
-		cone.set('semiaxes', [r, r]);
-		cone.set('pos', pos);
-		cone.set('h', height_str);
-		cone.set('displ', [-DisplacementArray(i), 0]);
-		cone.set('rat', ratio);
-		cone.set('rot', '-phi');
-		
-	else % Bad condition	
-				
-		height = (khg(1, i) - khg(1, end));
-		height_str = sprintf('%.12e', height);
-		displ = CenterArray(end) - CenterArray(i);
-
-		cone.set('axis', [0, 0, -1]);
-		cone.set('semiaxes', [r, r]);
-		cone.set('pos', pos);
-		cone.set('h', height_str);
-		cone.set('displ', [-displ, 0]);
-		cone.set('rat', '0');
-		cone.set('rot', '-phi');
-		
-		break;
-	end
+	cone.set('axis', [0, 0, -1]);
+	cone.set('semiaxes', [r, r]);
+	cone.set('pos', pos);
+	cone.set('h', height_str);
+	cone.set('displ', [-DisplacementArray(i), 0]);
+	cone.set('rat', ratio);
+	cone.set('rot', '-phi');
 end
 
 % Remove unused cones
 for j = i+1 : maxTag
-	model.geom('geom1').feature(['econ_' num2str(j)]).remove();
+	model.geom('geom1').feature.remove(['econ_' num2str(j)]);
 end
 
 fprintf('Keyhole was build out of %d elements.\n', i);
