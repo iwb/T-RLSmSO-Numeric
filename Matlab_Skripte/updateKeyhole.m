@@ -1,4 +1,4 @@
-function updateKeyhole(model, geometry, speed, temp, config)
+function depth = updateKeyhole(model, geometry, speed, temp, config)
 %UPDATEKEYHOLE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -31,7 +31,7 @@ for i = 1:size(CenterArray, 2)-1
 	height = HeightArray(i);
 	
 	if (height/r > 10) % Bad condition
-		i = i - 1;
+		i = i - 1; %#ok<FXSET> b/c we break immediately afterwards
 		break;
 	end
 	
@@ -58,6 +58,8 @@ end
 for j = i+1 : maxTag
 	model.geom('geom1').feature.remove(['econ_' num2str(j)]);
 end
+
+depth = khg(1, i+1);
 
 fprintf('Keyhole was build out of %d elements.\n', i);
 

@@ -1,4 +1,4 @@
-function [ KH_x, KH_y, phiArray, speedArray, dt, ProbeArray ] = createTrajectory( config )
+function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y ] = createTrajectory( config )
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -30,9 +30,9 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, ProbeArray ] = createTrajectory
  	tArray = tArray + lookAhead;
 	pArray = pArray + lookAhead .* 2 * pi * config.osz.Frequency;  
     
-	ProbeArray(1, :) = config.dis.StartX + config.osz.Amplitude + ...
+	Sensor_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
-	ProbeArray(2, :) = config.osz.Amplitude * sin(pArray); % [m]
+	Sensor_y = config.osz.Amplitude * sin(pArray); % [m]
 end
 
 %% Quadratische Zeitschritte

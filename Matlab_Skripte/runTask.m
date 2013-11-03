@@ -49,8 +49,7 @@ if (config.sim.savePool)
 end
 
 %% Zeit- und Ortsschritte festlegen
-
-[KH_x, KH_y, phiArray, speedArray, dt] = createTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y] = createTrajectory(config);
 
 save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
@@ -88,7 +87,7 @@ geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.S
 geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
 % Keyhole
 clear updateKeyhole;
-createKeyhole(model, geometry, speedArray(1), config);
+KH_depth = createKeyhole(model, geometry, speedArray(1), config);
 
 %% Material zuweisen
 initMaterial(model, config);
@@ -212,13 +211,19 @@ for i=2:2%length(KH_x)
 	
 	%% Zweiten Solver erzeugen
 	Solver = getNextSolver(model, Solver, dt(i));
-	
+    
+    %% Temperatur an der Stelle des nächsten KH messen
+    SensorCoords(3, :) = linspace(0, -KH_depth, 5);
+    SensorCoords(1, :) = Sensor_x(i);
+    SensorCoords(2, :) = Sensor_y(i);
+    SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+    
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
 	
-	updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config)
+	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
 	
 	model.geom('geom1').run;
 	model.mesh('mesh1').run;
