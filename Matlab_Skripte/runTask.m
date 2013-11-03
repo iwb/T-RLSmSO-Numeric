@@ -267,7 +267,7 @@ for i=2:2%length(KH_x)
 	thistime = toc(iterstart);
 	fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, length(KH_x), thistime/60);
 	if (i < length(KH_x))
-		itertime = 0.85 * itertime + 0.15 * thistime;
+		itertime = 0.8 * itertime + 0.2 * thistime;
 		remaining = (length(KH_x) - i) * itertime;
 		fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 	end

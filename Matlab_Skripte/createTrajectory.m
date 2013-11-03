@@ -1,4 +1,4 @@
-function [ KH_x, KH_y, phiArray, speedArray, dt ] = createTrajectory( config )
+function [ KH_x, KH_y, phiArray, speedArray, dt, ProbeArray ] = createTrajectory( config )
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -7,7 +7,7 @@ function [ KH_x, KH_y, phiArray, speedArray, dt ] = createTrajectory( config )
 
 	KH_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
-	KH_y = config.osz.Amplitude * sin(pArray); % [m]
+	KH_y = config.osz.Amplitude * sin(pArray); % [m]    
 	%plot(KH_x, KH_y, 'o-');
     
     factor = 2*pi * config.osz.Frequency * config.osz.Amplitude;
@@ -21,6 +21,18 @@ function [ KH_x, KH_y, phiArray, speedArray, dt ] = createTrajectory( config )
 		config.sim.Oscillations / (config.osz.Frequency * config.sim.TimeSteps);
 	
 	dt(end) = dt(end)/2;
+    
+    
+    %% Adjust timestamps
+    kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+    lookAhead = 3.75 .* kappa ./ speedArray.^2; % Look-ahead time [s]
+    
+ 	tArray = tArray + lookAhead;
+	pArray = pArray + lookAhead .* 2 * pi * config.osz.Frequency;  
+    
+	ProbeArray(1, :) = config.dis.StartX + config.osz.Amplitude + ...
+		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
+	ProbeArray(2, :) = config.osz.Amplitude * sin(pArray); % [m]
 end
 
 %% Quadratische Zeitschritte
