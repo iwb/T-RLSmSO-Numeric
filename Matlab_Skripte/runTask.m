@@ -107,10 +107,11 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 %% Mesh erzeugen
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
-model.mesh('mesh1').feature('size').set('hmax', '3 [mm]');
+model.mesh('mesh1').feature('size').set('hmax', '1 [mm]');
 model.mesh('mesh1').feature('size').set('hmin', '10 [µm]');
-model.mesh('mesh1').feature('size').set('hcurve', '0.9'); % Kurvenradius
-model.mesh('mesh1').feature('size').set('hgrad', '1.24'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hgrad', '1.4'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hcurve', '0.8'); % Kurvenradius, kleiner = feiner
+model.mesh('mesh1').feature('size').set('hnarrow', '0.6'); % Auflösung schmaler Regionen. größer = feiner
 
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
@@ -199,11 +200,15 @@ if (config.sim.saveVideo)
 	imwrite(imind, cm, gifPath, 'gif', 'Loopcount', inf);
 end
 
-%% Wichtig, da sinst die Nummern der Solver nicht mehr stimmen!
+%% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
 clear getnextSolver;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%    Alle wieteren Iterationen    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Über die Schritte iterieren
-for i=2:2%length(KH_x)
+for i=2:length(KH_x)
 	
 	iterstart = tic;
 	
@@ -213,7 +218,7 @@ for i=2:2%length(KH_x)
 	Solver = getNextSolver(model, Solver, dt(i));
     
     %% Temperatur an der Stelle des nächsten KH messen
-    SensorCoords(3, :) = linspace(0, -KH_depth, 5);
+    SensorCoords(3, :) = linspace(0, KH_depth, 5);
     SensorCoords(1, :) = Sensor_x(i);
     SensorCoords(2, :) = Sensor_y(i);
     SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
@@ -286,7 +291,7 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 
 %% Daten speichern
 if (config.sim.saveMph)
-	mphsave(model, ['../Ergebnisse/' char(model.name)]);
+	mphsave(model, [output_path char(model.name)]);
 end
 
 % Pool speichern
@@ -305,7 +310,7 @@ if (config.sim.saveFinalTemps)
 	
 	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 	
-	save('../Ergebnisse/FinalTemps.mat', 'FinalTemps', 'finalCoords');
+	save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
 end
 
 diary off
