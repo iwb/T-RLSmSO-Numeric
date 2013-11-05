@@ -4,5 +4,6 @@ function saveSection( model, i, coords, filename )
 
     Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', coords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on'); %#ok
     save(sprintf(filename, i), 'Temps');
+	clear Temps;
 end
 

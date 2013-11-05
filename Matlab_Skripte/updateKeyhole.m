@@ -61,7 +61,7 @@ end
 
 depth = khg(1, i+1);
 
-fprintf('Keyhole was build out of %d elements.\n', i);
+fprintf('Keyhole was build out of %d elements, %4.0fµm deep.\n', i, -depth * 1e6);
 
 geometry.run; % Damit die Selektion funktioniert...
 

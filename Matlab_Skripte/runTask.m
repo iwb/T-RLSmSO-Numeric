@@ -2,15 +2,20 @@
 
 clc;
 diary off;
+addpath('../Keyhole');
 
 config = initConfig;
 
-output_path = './Ergebnisse/';
+output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
 sectionPath = [output_path 'Section_%02d.mat'];
-poolPath = 'Pool.mat';
+poolPath = [output_path 'Pool.mat'];
+
+if (config.sim.saveVideo && ~config.sim.showPlot)
+	error('To save the video, you must enable the plot!');
+end
 
 if exist(logPath, 'file')
 	delete(logPath);
@@ -24,10 +29,10 @@ import com.comsol.model.util.*
 
 %% Koordinaten für die Sections
 if (config.sim.saveSections)
-	resolution = 5e-3; % [mm]
-	range_x = 0 : resolution : config.dis.SampleLength;	
-	range_y = 0;
-	range_z = 0 : -resolution : -1.5;
+	resolution = 10e-6; % [m]
+	range_x = single(0 : resolution : config.dis.SampleLength);	
+	range_y = single(linspace(-2e-4, 2e-4, 9));
+	range_z = single(0 : -resolution : -1.5e-3);
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -38,10 +43,10 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 100e-3; % [mm]
-	range_x = 0 : resolution : config.dis.SampleLength;
-	range_y = -config.dis.SampleWidth/2 : resolution : config.dis.SampleWidth/2;
-	range_z = 0 : -resolution : -config.dis.SampleThickness;
+	resolution = 40e-6; % [m]
+	range_x = single(0 : resolution : config.dis.SampleLength);
+	range_y = single(-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
+	range_z = single(0 : -resolution : -config.dis.SampleThickness);
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -109,7 +114,7 @@ model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '1 [mm]');
 model.mesh('mesh1').feature('size').set('hmin', '10 [µm]');
-model.mesh('mesh1').feature('size').set('hgrad', '1.4'); % Maximale Wachstumsrate
+model.mesh('mesh1').feature('size').set('hgrad', '1.37'); % Maximale Wachstumsrate
 model.mesh('mesh1').feature('size').set('hcurve', '0.8'); % Kurvenradius, kleiner = feiner
 model.mesh('mesh1').feature('size').set('hnarrow', '0.6'); % Auflösung schmaler Regionen. größer = feiner
 
@@ -300,10 +305,10 @@ if (config.sim.savePool)
 end
 
 if (config.sim.saveFinalTemps)
-	resolution = 50e-3; % [mm]
-	range_x = 0 : resolution :Plength;
-	range_y = -0.5 : resolution : 0.5;
-	range_z = 0: -resolution :-1.5;
+	resolution = 40e-6; % [m]
+	range_x = 0 : resolution : 5e-3;
+	range_y = -2e-3 : resolution : 2e-3;
+	range_z = 0: -resolution : -2e-3;
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];

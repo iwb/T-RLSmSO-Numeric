@@ -34,15 +34,15 @@ function [ config ] = initConfig()
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
 
-	config.sim.TimeSteps = 30;			% [-]
-	config.sim.Oscillations = 1.5;		% [-] X.5 recommended
+	config.sim.TimeSteps = 25;			% [-]
+	config.sim.Oscillations = 2.5;		% [-] X.5 recommended
 
 	config.sim.saveSections = false;
-	config.sim.savePool = false;
-	config.sim.saveFinalTemps = false;
+	config.sim.savePool = true;
+	config.sim.saveFinalTemps = true;
 	config.sim.saveMph = true;
-	config.sim.saveVideo = false;
-	config.sim.showPlot = false;
+	config.sim.saveVideo = true;
+	config.sim.showPlot = true;
 	config.sim.showComsolProgress = true;
 end
 
