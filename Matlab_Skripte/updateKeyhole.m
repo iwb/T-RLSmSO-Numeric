@@ -75,10 +75,15 @@ geometry.run; % Damit die Selektion funktioniert...
 
 if (maxTag == 0)
     model.selection.create('KH_Domain', 'Explicit');
+    model.selection.create('FM_Domain', 'Explicit');
 end
 
 model.selection('KH_Domain').set(3:i+2);
-model.selection('KH_Domain').name('Kehole_Domain');
+model.selection('KH_Domain').name('Keyhole_Domain');
+
+% Include the cylinder in the fine mesh
+model.selection('FM_Domain').set(2:i+2);
+model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
 if (maxTag == 0)
     model.selection.create('KH_Bounds', 'Adjacent');

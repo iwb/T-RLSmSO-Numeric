@@ -43,7 +43,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 40e-6; % [m]
+	resolution = 20e-6; % [m]
 	range_x = single(0 : resolution : config.dis.SampleLength);
 	range_y = single(-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
 	range_z = single(0 : -resolution : -config.dis.SampleThickness);
@@ -162,7 +162,10 @@ end
 iterstart = tic;
 i = 1; % Loop-runrolling für die erste Iteration
 
+fprintf('\nCurrent Time: %s\n', datestr(now));
+
 fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt(i)*1e3);
+
 
 %% Modell lösen
 Solver.runAll;

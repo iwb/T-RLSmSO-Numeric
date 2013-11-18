@@ -6,16 +6,19 @@ function createMesh( model )
 model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
 model.mesh('mesh1').feature('ftet1').feature.create('size1', 'Size');
 
-model.mesh('mesh1').feature('ftet1').selection.named('KH_Domain');
-model.mesh('mesh1').feature('ftet1').selection().geom(3).add(2);
+model.mesh('mesh1').feature('ftet1').selection.named('FM_Domain');
 
 model.mesh('mesh1').feature('ftet1').feature('size1').set('custom', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hmaxactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '50e-6');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '60 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hminactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hmin', '10e-6');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hmin', '10 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hgradactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hgrad', '1.14');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hgrad', '1.2');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hcurveactive', 'on');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hcurve', '1.2');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hnarrowactive', 'on');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hnarrow', '0.1');
 
 %% Coarse Mesh outside
 model.mesh('mesh1').feature.create('ftet2', 'FreeTet');
