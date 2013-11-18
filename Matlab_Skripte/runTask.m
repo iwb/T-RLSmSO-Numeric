@@ -54,7 +54,7 @@ if (config.sim.savePool)
 end
 
 %% Zeit- und Ortsschritte festlegen
-[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y] = createTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x] = createTrajectory(config);
 
 save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
@@ -80,9 +80,11 @@ model.study('std1').feature.create('time', 'Transient');
 model.study('std1').feature('time').activate('ht', true);
 
 % Keyholeposition festlegen
-model.param.set('Lx', KH_x(1));
-model.param.set('Ly', KH_y(1));
+model.param.set('Lx', KH_x(1)); % [m]
+model.param.set('Ly', KH_y(1)); % [m]
 model.param.set('phi', sprintf('%.12e [rad]', phiArray(1)));
+model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(1)));
+model.param.set('Cyl_r', sprintf('%.12e [m]', (config.osz.Amplitude + config.las.WaistSize) * 1.5));
 
 %% Geometrie erzeugen
 model.geom('geom1').feature('fin').set('repairtol', '1.0E-6');
@@ -90,6 +92,13 @@ model.geom('geom1').feature('fin').set('repairtol', '1.0E-6');
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
 geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
+
+% Fein gemeshter Zylinder
+model.geom('geom1').feature.create('cyl1', 'Cylinder');
+model.geom('geom1').feature('cyl1').set('pos', {'Cyl_x' '0' '-Cyl_h'});
+model.geom('geom1').feature('cyl1').set('h', 'Cyl_h');
+model.geom('geom1').feature('cyl1').set('r', 'Cyl_r');
+
 % Keyhole
 clear updateKeyhole;
 KH_depth = createKeyhole(model, geometry, speedArray(1), config);
@@ -110,17 +119,8 @@ model.physics('ht').feature('temp1').set('T0', 1, config.mat.VaporTemperature);
 model.physics('ht').feature('temp1').name('KH_Rand');
 
 %% Mesh erzeugen
-model.mesh('mesh1').feature.create('ftet1', 'FreeTet');
-model.mesh('mesh1').feature('size').set('custom', 'on');
-model.mesh('mesh1').feature('size').set('hmax', '1 [mm]');
-model.mesh('mesh1').feature('size').set('hmin', '10 [µm]');
-model.mesh('mesh1').feature('size').set('hgrad', '1.37'); % Maximale Wachstumsrate
-model.mesh('mesh1').feature('size').set('hcurve', '0.8'); % Kurvenradius, kleiner = feiner
-model.mesh('mesh1').feature('size').set('hnarrow', '0.6'); % Auflösung schmaler Regionen. größer = feiner
-
-
 ModelUtil.showProgress(config.sim.showComsolProgress);
-model.mesh('mesh1').run;
+createMesh(model);
 
 %% Mesh plotten
 
@@ -213,7 +213,7 @@ clear getnextSolver;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Über die Schritte iterieren
-for i=2:length(KH_x)
+for i=2:2%length(KH_x)
 	
 	iterstart = tic;
 	
@@ -232,11 +232,12 @@ for i=2:length(KH_x)
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
+	model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
 	
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
 	
 	model.geom('geom1').run;
-	model.mesh('mesh1').run;
+	updateMesh(model);
 	
 	stats = mphmeshstats(model);
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));

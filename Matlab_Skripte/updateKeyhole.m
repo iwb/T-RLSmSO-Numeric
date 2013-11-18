@@ -63,6 +63,13 @@ depth = khg(1, i+1);
 
 fprintf('Keyhole was build out of %d elements, %4.0fµm deep.\n', i, -depth * 1e6);
 
+%% Zylinder anpassen
+Cyl_height = min(config.dis.SampleThickness, -depth * 1.5);
+model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
+
+
+%% Geometrie finalisieren
+
 geometry.run; % Damit die Selektion funktioniert...
 
 
@@ -70,8 +77,8 @@ if (maxTag == 0)
     model.selection.create('KH_Domain', 'Explicit');
 end
 
-model.selection('KH_Domain').set(2:i+1);
-model.selection('KH_Domain').name('Keyhole_Domain');
+model.selection('KH_Domain').set(3:i+2);
+model.selection('KH_Domain').name('Kehole_Domain');
 
 if (maxTag == 0)
     model.selection.create('KH_Bounds', 'Adjacent');
