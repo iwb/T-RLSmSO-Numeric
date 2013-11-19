@@ -43,13 +43,17 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 20e-6; % [m]
+	resolution = 10e-6; % [m]
 	range_x = single(0 : resolution : config.dis.SampleLength);
 	range_y = single(-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
 	range_z = single(0 : -resolution : -config.dis.SampleThickness);
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
-	poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
+    poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
+    poolPageSize = size(range_x, 2) * size(range_y, 2);
+    poolPages = size(range_z, 2);
+    poolCoords = reshape(poolCoords, 3, poolPageSize, poolPages);
+    
 	clear resolution range_x range_y range_z XX YY ZZ
 end
 
@@ -151,7 +155,7 @@ model.result('pg').set('t', 0.1);
 
 %% Pool initialisieren
 if (config.sim.savePool)
-	Pool = false(1, size(poolCoords, 2));
+	Pool = false(1, poolPageSize, poolPages);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,8 +189,10 @@ end
 
 %% Pool kumulieren
 if (config.sim.savePool)
-	Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-	Pool = Pool | (Temps > config.mat.MeltingTemperature);
+    for z = 1 : poolPages
+        Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+        Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+    end
 end
 
 %% Fortschritt
@@ -270,8 +276,10 @@ for i=2:2%length(KH_x)
 	
 	%% Pool kumulieren
 	if (config.sim.savePool)
-		Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-		Pool = Pool | (Temps > config.mat.MeltingTemperature);
+        for z = 1 : poolPages
+            Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+            Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+        end
 	end
 	
 	%% GIF Animation erzeugen
@@ -305,6 +313,8 @@ end
 
 % Pool speichern
 if (config.sim.savePool)
+    Pool = reshape(Pool, 1, poolPageSize * poolPages);
+    poolCoords = reshape(poolCoords, 3, poolPageSize * poolPages);
 	save(poolPath, 'Pool', 'poolCoords');
 end
 
