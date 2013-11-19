@@ -172,9 +172,13 @@ fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt
 
 
 %% Modell lösen
+fprintf('Solving model ... ');
+solverstart = tic;
 Solver.runAll;
+solvertime = toc(solverstart);
+fprintf('done. (%0.1f min)\n', solvertime/60); 
+    
 model.result('pg').set('data', 'dset1');
-fprintf('\nCurrent Time: %s\n', datestr(now));
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
@@ -231,7 +235,7 @@ for i=2:2%length(KH_x)
 	
 	iterstart = tic;
 	
-    fprintf('Current Time: %s\n', datestr(now));
+    fprintf('Current Time: %s\n\n', datestr(now));
 	fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt(i)*1e3);
 	
 	%% Zweiten Solver erzeugen
