@@ -17,15 +17,18 @@ if (config.sim.saveVideo && ~config.sim.showPlot)
 	error('To save the video, you must enable the plot!');
 end
 
-if exist(logPath, 'file')
+if exist(logPath, 'file')  
+    inp = input('Old diary found. Overwrite? (y/n)  ', 's');
+    if inp ~= 'j' && inp ~= 'y'
+        fprintf('Calculation canceled.\n');
+        return;
+    end
 	delete(logPath);
 end
 diary(logPath);
 
 import com.comsol.model.*
 import com.comsol.model.util.*
-
-%% Parameter für das Modell
 
 %% Koordinaten für die Sections
 if (config.sim.saveSections)
@@ -255,8 +258,13 @@ for i=2:2%length(KH_x)
 	
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
 	
+    %% Mesh updaten
+    fprintf('Remeshing ... ');
+    meshstart = tic;
 	model.geom('geom1').run;
 	updateMesh(model);
+    meshtime = toc(meshstart);
+    fprintf('done. (%0.1f sec)\n', meshtime); 
 	
 	stats = mphmeshstats(model);
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
