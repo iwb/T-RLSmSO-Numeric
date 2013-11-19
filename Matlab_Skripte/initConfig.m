@@ -34,8 +34,13 @@ function [ config ] = initConfig()
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
 
-	config.sim.TimeSteps = 85;			% [-]
-	config.sim.Oscillations = 8.5;		% [-] X.5 recommended
+	config.sim.TimeSteps = 85;					% [-]
+	config.sim.Oscillations = 8.5;				% [-] X.5 recommended
+	
+	% Number of timesteps in which the projected pool needs to stay
+	% constant so that the simulation is considered finished.
+	config.sim.PoolConvergenceThreshold = ...	% [-] Recommended: One oscillation
+		ceil(config.sim.TimeSteps / config.sim.Oscillations);	
 
 	config.sim.saveSections = false;
 	config.sim.savePool = true;
