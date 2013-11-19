@@ -43,10 +43,10 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 10e-6; % [m]
-	range_x = single(0 : resolution : config.dis.SampleLength);
-	range_y = single(-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
-	range_z = single(0 : -resolution : -config.dis.SampleThickness);
+	resolution = 15e-6; % [m]
+	range_x = (0 : resolution : config.dis.SampleLength);
+	range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
+	range_z = (0 : -resolution : -config.dis.SampleThickness);
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -189,12 +189,16 @@ if (config.sim.saveSections)
 end
 
 %% Pool kumulieren
+fprintf('Saving pool ... ');
+poolstart = tic;
 if (config.sim.savePool)
     for z = 1 : poolPages
         Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
         Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
     end
 end
+pooltime = toc(poolstart);
+fprintf('done. (%0.1f min)\n', pooltime/60);
 
 %% Fortschritt
 itertime = toc(iterstart);
@@ -223,7 +227,7 @@ clear getnextSolver;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Über die Schritte iterieren
-for i=2:length(KH_x)
+for i=2:2%length(KH_x)
 	
 	iterstart = tic;
 	
@@ -261,7 +265,11 @@ for i=2:length(KH_x)
 	end
 	
 	%% Modell Lösen
+    fprintf('Solving model ... ');
+    solverstart = tic;
 	Solver.runAll;
+    solvertime = toc(solverstart);
+    fprintf('done. (%0.1f min)\n', solvertime/60);    
 	
 	%% Temperaturfeld Plotten
 	if (config.sim.showPlot)
@@ -278,10 +286,16 @@ for i=2:length(KH_x)
 	
 	%% Pool kumulieren
 	if (config.sim.savePool)
-        for z = 1 : poolPages
-            Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-            Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+        fprintf('Saving pool ... ');
+        poolstart = tic;
+        if (config.sim.savePool)
+            for z = 1 : poolPages
+                Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+                Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+            end
         end
+        pooltime = toc(poolstart);
+        fprintf('done. (%0.1f min)\n', pooltime/60);
 	end
 	
 	%% GIF Animation erzeugen
