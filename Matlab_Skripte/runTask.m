@@ -14,16 +14,16 @@ sectionPath = [output_path 'Section_%02d.mat'];
 poolPath = [output_path 'Pool.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
-	error('To save the video, you must enable the plot!');
+    error('To save the video, you must enable the plot!');
 end
 
-if exist(logPath, 'file')  
+if exist(logPath, 'file')
     inp = input('Old diary found. Overwrite? (y/n)  ', 's');
     if inp ~= 'j' && inp ~= 'y'
         fprintf('Calculation canceled.\n');
         return;
     end
-	delete(logPath);
+    delete(logPath);
 end
 diary(logPath);
 
@@ -32,32 +32,32 @@ import com.comsol.model.util.*
 
 %% Koordinaten für die Sections
 if (config.sim.saveSections)
-	resolution = 10e-6; % [m]
-	range_x = single(0 : resolution : config.dis.SampleLength);	
-	range_y = single(linspace(-2e-4, 2e-4, 9));
-	range_z = single(0 : -resolution : -1.5e-3);
-	
-	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
-	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
-	
-	save([output_path 'Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
-	clear resolution range_x range_y range_z XX YY ZZ
+    resolution = 10e-6; % [m]
+    range_x = single(0 : resolution : config.dis.SampleLength);
+    range_y = single(linspace(-2e-4, 2e-4, 9));
+    range_z = single(0 : -resolution : -1.5e-3);
+    
+    [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+    sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
+    
+    save([output_path 'Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
+    clear resolution range_x range_y range_z XX YY ZZ
 end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 15e-6; % [m]
-	range_x = (0 : resolution : config.dis.SampleLength);
-	range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
-	range_z = (0 : -resolution : -config.dis.SampleThickness);
-	
-	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+    resolution = 15e-6; % [m]
+    range_x = (0 : resolution : config.dis.SampleLength);
+    range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
+    range_z = (0 : -resolution : -config.dis.SampleThickness);
+    
+    [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
     poolPageSize = size(range_x, 2) * size(range_y, 2);
     poolPages = size(range_z, 2);
     poolCoords = reshape(poolCoords, 3, poolPageSize, poolPages);
     
-	clear resolution range_x range_y range_z XX YY ZZ
+    clear resolution range_x range_y range_z XX YY ZZ
 end
 
 %% Zeit- und Ortsschritte festlegen
@@ -158,7 +158,7 @@ model.result('pg').set('t', 0.1);
 
 %% Pool initialisieren
 if (config.sim.savePool)
-	Pool = false(1, poolPageSize, poolPages);
+    Pool = false(1, poolPageSize, poolPages);
 end
 
 iterations = 2; %length(KH_x);
@@ -181,20 +181,20 @@ fprintf('Solving model ... ');
 solverstart = tic;
 Solver.runAll;
 solvertime = toc(solverstart);
-fprintf('done. (%0.1f min)\n', solvertime/60); 
-    
+fprintf('done. (%0.1f min)\n', solvertime/60);
+
 model.result('pg').set('data', 'dset1');
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
-	h1 = subplot(2, 1, 2);
-	mphplot(model, 'pg', 'rangenum', 1);
-	drawnow;
+    h1 = subplot(2, 1, 2);
+    mphplot(model, 'pg', 'rangenum', 1);
+    drawnow;
 end
 
 %% Schnitt speichern
 if (config.sim.saveSections)
-	saveSection(model, i, sectionCoords, sectionPath);
+    saveSection(model, i, sectionCoords, sectionPath);
 end
 
 %% Pool kumulieren
@@ -203,7 +203,7 @@ poolstart = tic;
 if (config.sim.savePool)
     for z = 1 : poolPages
         Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-        Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+        Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
     end
 end
 pooltime = toc(poolstart);
@@ -218,14 +218,14 @@ fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datest
 
 %% GIF, erster Frame
 if (config.sim.saveVideo)
-% Next line of code are intended to stop the subplots from shrinking
-% while using colorbar, standard bug in matlab.
-	ax1 = get(h1,'position'); % Save the position as ax
-	
-	frame = getframe(gcf);
-	im = frame2im(frame);
-	[imind,cm] = rgb2ind(im, 256);
-	imwrite(imind, cm, gifPath, 'gif', 'Loopcount', inf);
+    % Next line of code are intended to stop the subplots from shrinking
+    % while using colorbar, standard bug in matlab.
+    ax1 = get(h1,'position'); % Save the position as ax
+    
+    frame = getframe(gcf);
+    im = frame2im(frame);
+    [imind,cm] = rgb2ind(im, 256);
+    imwrite(imind, cm, gifPath, 'gif', 'Loopcount', inf);
 end
 
 %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
@@ -240,14 +240,14 @@ flushDiary();
 
 %% Über die Schritte iterieren
 for i=2 : iterations
-	
-	iterstart = tic;
-	
+    
+    iterstart = tic;
+    
     fprintf('Current Time: %s\n\n', datestr(now));
-	fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
-	
-	%% Zweiten Solver erzeugen
-	Solver = getNextSolver(model, Solver, dt(i));
+    fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
+    
+    %% Zweiten Solver erzeugen
+    Solver = getNextSolver(model, Solver, dt(i));
     
     %% Temperatur an der Stelle des nächsten KH messen
     SensorCoords(3, :) = linspace(0, KH_depth, 5);
@@ -255,83 +255,83 @@ for i=2 : iterations
     SensorCoords(2, :) = Sensor_y(i);
     SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
     
-	%% Geometrie updaten
-	model.param.set('Lx', KH_x(i));
-	model.param.set('Ly', KH_y(i));
-	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
-	model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
-	
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
-	
+    %% Geometrie updaten
+    model.param.set('Lx', KH_x(i));
+    model.param.set('Ly', KH_y(i));
+    model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
+    model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
+    
+    KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
+    
     %% Mesh updaten
     fprintf('Remeshing ... ');
     meshstart = tic;
-	model.geom('geom1').run;
-	updateMesh(model);
+    model.geom('geom1').run;
+    updateMesh(model);
     meshtime = toc(meshstart);
-    fprintf('done. (%0.1f sec)\n', meshtime); 
-	
-	stats = mphmeshstats(model);
-	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
-	
-	%% Mesh plotten
-	if (config.sim.showPlot)
-		subplot(2, 1, 1);
-		mphmesh(model);
-		drawnow;
-	end
-	
-	%% Modell Lösen
+    fprintf('done. (%0.1f sec)\n', meshtime);
+    
+    stats = mphmeshstats(model);
+    fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
+    
+    %% Mesh plotten
+    if (config.sim.showPlot)
+        subplot(2, 1, 1);
+        mphmesh(model);
+        drawnow;
+    end
+    
+    %% Modell Lösen
     fprintf('Solving model ... ');
     solverstart = tic;
-	Solver.runAll;
+    Solver.runAll;
     solvertime = toc(solverstart);
-    fprintf('done. (%0.1f min)\n', solvertime/60);    
-	
-	%% Temperaturfeld Plotten
-	if (config.sim.showPlot)
-		subplot(2, 1, 2);
-		mphplot(model, 'pg', 'rangenum', 1);
-		set(gca,'position',ax1); % Manually setting this holds the position with colorbar
-		drawnow;
-	end
-	
-	%% Schnitt speichern
-	if (config.sim.saveSections)
-		saveSection(model, i, sectionCoords, sectionPath);
-	end
-	
-	%% Pool kumulieren
-	if (config.sim.savePool)
+    fprintf('done. (%0.1f min)\n', solvertime/60);
+    
+    %% Temperaturfeld Plotten
+    if (config.sim.showPlot)
+        subplot(2, 1, 2);
+        mphplot(model, 'pg', 'rangenum', 1);
+        set(gca,'position',ax1); % Manually setting this holds the position with colorbar
+        drawnow;
+    end
+    
+    %% Schnitt speichern
+    if (config.sim.saveSections)
+        saveSection(model, i, sectionCoords, sectionPath);
+    end
+    
+    %% Pool kumulieren
+    if (config.sim.savePool)
         fprintf('Saving pool ... ');
         poolstart = tic;
         if (config.sim.savePool)
             for z = 1 : poolPages
                 Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-                Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);   
+                Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
             end
         end
         pooltime = toc(poolstart);
         fprintf('done. (%0.1f min)\n', pooltime/60);
-	end
-	
-	%% GIF Animation erzeugen
-	if (config.sim.saveVideo)
-		frame = getframe(gcf);
-		im = frame2im(frame);
-		[imind,cm] = rgb2ind(im,256);
-		imwrite(imind, cm, gifPath, 'gif', 'WriteMode', 'append');
-	end
-	
-	%% Fortschritt anzeigen
-	thistime = toc(iterstart);
-	fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, thistime/60);
-	if (i < iterations)
-		itertime = 0.8 * itertime + 0.2 * thistime;
-		remaining = (iterations - i) * itertime;
-		fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
     end
-
+    
+    %% GIF Animation erzeugen
+    if (config.sim.saveVideo)
+        frame = getframe(gcf);
+        im = frame2im(frame);
+        [imind,cm] = rgb2ind(im,256);
+        imwrite(imind, cm, gifPath, 'gif', 'WriteMode', 'append');
+    end
+    
+    %% Fortschritt anzeigen
+    thistime = toc(iterstart);
+    fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, thistime/60);
+    if (i < iterations)
+        itertime = 0.8 * itertime + 0.2 * thistime;
+        remaining = (iterations - i) * itertime;
+        fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
+    end
+    
     %% Flush diary
     flushDiary();
 end
@@ -346,7 +346,7 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 if (config.sim.saveMph)
     fprintf('Saving mph file ... ');
     flushDiary();
-	mphsave(model, [output_path char(model.name)]);
+    mphsave(model, [output_path char(model.name)]);
     fprintf('done.\n');
     flushDiary();
 end
@@ -357,7 +357,7 @@ if (config.sim.savePool)
     flushDiary();
     Pool = reshape(Pool, 1, poolPageSize * poolPages);
     poolCoords = reshape(poolCoords, 3, poolPageSize * poolPages);
-	save(poolPath, 'Pool', 'poolCoords');
+    save(poolPath, 'Pool', 'poolCoords');
     fprintf('done.\n');
     flushDiary();
 end
@@ -365,17 +365,17 @@ end
 if (config.sim.saveFinalTemps)
     fprintf('Saving final temps ... ');
     flushDiary();
-	resolution = 40e-6; % [m]
-	range_x = 0 : resolution : 5e-3;
-	range_y = -2e-3 : resolution : 2e-3;
-	range_z = 0: -resolution : -2e-3;
-	
-	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
-	finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];
-	
-	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-	
-	save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
+    resolution = 40e-6; % [m]
+    range_x = 0 : resolution : 5e-3;
+    range_y = -2e-3 : resolution : 2e-3;
+    range_z = 0: -resolution : -2e-3;
+    
+    [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+    finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];
+    
+    FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+    
+    save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
     fprintf('done.\n');
     flushDiary();
 end
@@ -384,7 +384,7 @@ diary off
 
 % Auf der Workstation die COMSOL-Lizenz freigeben
 if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
-	exit
+    exit
 end
 
 %end
