@@ -232,7 +232,7 @@ end
 clear getnextSolver;
 
 %% Flush diary
-flushDiary();
+flushDiary(logPath);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    Alle weiteren Iterationen    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -333,7 +333,7 @@ for i=2 : iterations
     end
     
     %% Flush diary
-    flushDiary();
+    flushDiary(logPath);
 end
 
 clearvars Solver
@@ -345,26 +345,26 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 %% Daten speichern
 if (config.sim.saveMph)
     fprintf('Saving mph file ... ');
-    flushDiary();
+    flushDiary(logPath);
     mphsave(model, [output_path char(model.name)]);
     fprintf('done.\n');
-    flushDiary();
+    flushDiary(logPath);
 end
 
 % Pool speichern
 if (config.sim.savePool)
     fprintf('Saving pool ... ');
-    flushDiary();
+    flushDiary(logPath);
     Pool = reshape(Pool, 1, poolPageSize * poolPages);
     poolCoords = reshape(poolCoords, 3, poolPageSize * poolPages);
     save(poolPath, 'Pool', 'poolCoords');
     fprintf('done.\n');
-    flushDiary();
+    flushDiary(logPath);
 end
 
 if (config.sim.saveFinalTemps)
     fprintf('Saving final temps ... ');
-    flushDiary();
+    flushDiary(logPath);
     resolution = 40e-6; % [m]
     range_x = 0 : resolution : 5e-3;
     range_y = -2e-3 : resolution : 2e-3;
@@ -377,7 +377,7 @@ if (config.sim.saveFinalTemps)
     
     save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
     fprintf('done.\n');
-    flushDiary();
+    flushDiary(logPath);
 end
 
 diary off
