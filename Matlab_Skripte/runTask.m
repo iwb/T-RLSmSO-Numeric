@@ -72,7 +72,7 @@ ModelUtil.showProgress(false);
 
 model = ModelUtil.create('Model');
 %model.modelPath('C:/Daten/Julius_FEM/Matlab_3D');
-model.name('KH_linear.mph');
+model.name('Final_Model.mph');
 
 model.modelNode.create('mod1');
 
@@ -161,6 +161,8 @@ if (config.sim.savePool)
 	Pool = false(1, poolPageSize, poolPages);
 end
 
+iterations = 2; %length(KH_x);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    Erste Iteration beginnt    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,7 +173,7 @@ i = 1; % Loop-runrolling für die erste Iteration
 
 fprintf('\nCurrent Time: %s\n', datestr(now));
 
-fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt(i)*1e3);
+fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
 
 
 %% Modell lösen
@@ -209,8 +211,8 @@ fprintf('done. (%0.1f min)\n', pooltime/60);
 
 %% Fortschritt
 itertime = toc(iterstart);
-remaining = (length(KH_x) - i) * itertime;
-fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, length(KH_x), itertime/60);
+remaining = (iterations - i) * itertime;
+fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, itertime/60);
 fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
 
 
@@ -229,17 +231,20 @@ end
 %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
 clear getnextSolver;
 
+%% Flush diary
+flushDiary();
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%    Alle wieteren Iterationen    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%    Alle weiteren Iterationen    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Über die Schritte iterieren
-for i=2:2%length(KH_x)
+for i=2 : iterations
 	
 	iterstart = tic;
 	
     fprintf('Current Time: %s\n\n', datestr(now));
-	fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, length(KH_x), dt(i)*1e3);
+	fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
 	
 	%% Zweiten Solver erzeugen
 	Solver = getNextSolver(model, Solver, dt(i));
@@ -320,12 +325,15 @@ for i=2:2%length(KH_x)
 	
 	%% Fortschritt anzeigen
 	thistime = toc(iterstart);
-	fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, length(KH_x), thistime/60);
-	if (i < length(KH_x))
+	fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, thistime/60);
+	if (i < iterations)
 		itertime = 0.8 * itertime + 0.2 * thistime;
-		remaining = (length(KH_x) - i) * itertime;
+		remaining = (iterations - i) * itertime;
 		fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
-	end
+    end
+
+    %% Flush diary
+    flushDiary();
 end
 
 clearvars Solver
@@ -336,17 +344,27 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 
 %% Daten speichern
 if (config.sim.saveMph)
+    fprintf('Saving mph file ... ');
+    flushDiary();
 	mphsave(model, [output_path char(model.name)]);
+    fprintf('done.\n');
+    flushDiary();
 end
 
 % Pool speichern
 if (config.sim.savePool)
+    fprintf('Saving pool ... ');
+    flushDiary();
     Pool = reshape(Pool, 1, poolPageSize * poolPages);
     poolCoords = reshape(poolCoords, 3, poolPageSize * poolPages);
 	save(poolPath, 'Pool', 'poolCoords');
+    fprintf('done.\n');
+    flushDiary();
 end
 
 if (config.sim.saveFinalTemps)
+    fprintf('Saving final temps ... ');
+    flushDiary();
 	resolution = 40e-6; % [m]
 	range_x = 0 : resolution : 5e-3;
 	range_y = -2e-3 : resolution : 2e-3;
@@ -358,6 +376,8 @@ if (config.sim.saveFinalTemps)
 	FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 	
 	save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
+    fprintf('done.\n');
+    flushDiary();
 end
 
 diary off
