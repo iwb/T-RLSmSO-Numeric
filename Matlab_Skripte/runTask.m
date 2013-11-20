@@ -131,7 +131,8 @@ model.physics('ht').feature('temp1').name('KH_Rand');
 
 %% Mesh erzeugen
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createSimpleMesh(model);
+createMesh(model);
+%createSimpleMesh(model);
 
 %% Mesh plotten
 stats = mphmeshstats(model);
