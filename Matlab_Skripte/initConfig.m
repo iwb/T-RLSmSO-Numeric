@@ -5,7 +5,7 @@ function [ config ] = initConfig()
 
 	%% Laser Parameter
 	config.las.WaveLength = 1064e-9;	% [m]
-	config.las.WaistSize = 50e-6;		% [m]
+	config.las.WaistSize = 25e-6;		% [m]
 
 	config.osz.Amplitude = 0.2e-3;		% [m]
 	config.osz.Frequency = 200;			% [Hz]
