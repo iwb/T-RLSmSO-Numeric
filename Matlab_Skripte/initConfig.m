@@ -46,6 +46,7 @@ function [ config ] = initConfig()
 	config.sim.savePool = true;
 	config.sim.saveFinalTemps = true;
 	config.sim.saveMph = true;
+	config.sim.saveTimeStepMph = true;
 	config.sim.saveVideo = true;
 	config.sim.showPlot = true;
 	config.sim.showComsolProgress = true;

@@ -11,6 +11,7 @@ output_path = '../Ergebnisse/';
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
 sectionPath = [output_path 'Section_%02d.mat'];
+timeStepMphPath = [output_path 'Model_%02d.mph'];
 poolPath = [output_path 'Pool.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
@@ -69,6 +70,18 @@ end
 
 save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Anzahl der Iterationen definieren
+iterations = 2; %length(KH_x);
+
+solvertime	= zeros(iterations, 1);
+meshtime	= zeros(iterations, 1);
+keyholetime	= zeros(iterations, 1);
+
+i = 1; % Loop-runrolling für die erste Iteration
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Eventuelle Modelle entfernen
 ModelUtil.clear;
 ModelUtil.remove('Model');
@@ -110,9 +123,15 @@ model.geom('geom1').feature('cyl1').set('pos', {'Cyl_x' '0' '-Cyl_h'});
 model.geom('geom1').feature('cyl1').set('h', 'Cyl_h');
 model.geom('geom1').feature('cyl1').set('r', 'Cyl_r');
 
-% Keyhole
+%% Keyhole berechnen und in die Geometrie einfügen
+fprintf('Calculating KH ...\n');
+keyholestart = tic;
+
 clear updateKeyhole;
 KH_depth = createKeyhole(model, geometry, speedArray(1), config);
+
+keyholetime(i) = toc(keyholestart);
+fprintf('done. (%0.1f sec)\n', keyholetime(i));
 
 %% Material zuweisen
 initMaterial(model, config);
@@ -130,9 +149,15 @@ model.physics('ht').feature('temp1').set('T0', 1, config.mat.VaporTemperature);
 model.physics('ht').feature('temp1').name('KH_Rand');
 
 %% Mesh erzeugen
+fprintf('Meshing ... ');
+meshstart = tic;
+
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh(model);
-%createSimpleMesh(model);
+%createMesh(model);
+createSimpleMesh(model);
+
+meshtime(i) = toc(meshstart);
+fprintf('done. (%0.1f sec)\n', meshtime(i));
 
 %% Mesh plotten
 stats = mphmeshstats(model);
@@ -160,16 +185,12 @@ model.result('pg').feature('surf1').set('colortable', 'Thermal');
 model.result('pg').feature('surf1').set('data', 'parent');
 model.result('pg').set('t', 0.1);
 
-%% Anzahl der Iterationen definieren
-iterations = 2; %length(KH_x);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    Erste Iteration beginnt    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Zeitmessung starten
 iterstart = tic;
-i = 1; % Loop-runrolling für die erste Iteration
 
 fprintf('\nCurrent Time: %s\n', datestr(now));
 
@@ -180,16 +201,36 @@ fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i
 fprintf('Solving model ... ');
 solverstart = tic;
 Solver.runAll;
-solvertime = toc(solverstart);
-fprintf('done. (%0.1f min)\n', solvertime/60);
+solvertime(i) = toc(solverstart);
+fprintf('done. (%0.1f min)\n', solvertime(i)/60);
 
 model.result('pg').set('data', 'dset1');
+
+%% Volumenintegration erstellen für die interne Energie
+model.result.numerical.create('int1', 'IntVolume');
+model.result.numerical('int1').setIndex('looplevelinput', 'last', 0);
+model.result.numerical('int1').selection.all;
+model.result.numerical('int1').set('expr', 'material.rho * material.Cp * (T - 293.15[K])');
+
+model.result.table.create('tbl1', 'Table');
+model.result.table('tbl1').comments('Internal Energy');
+model.result.numerical('int1').set('table', 'tbl1');
+model.result.numerical('int1').setResult;
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
 	h1 = subplot(2, 1, 2);
 	mphplot(model, 'pg', 'rangenum', 1);
 	drawnow;
+end
+
+%% MPH speichern
+if (config.sim.saveTimeStepMph)
+	fprintf('Saving mph file ... ');
+	flushDiary(logPath);
+	mphsave(model, sprintf(timeStepMphPath, i));
+	fprintf('done.\n');
+	flushDiary(logPath);
 end
 
 %% Schnitt speichern
@@ -216,7 +257,6 @@ itertime = toc(iterstart);
 remaining = (iterations - i) * itertime;
 fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, itertime/60);
 fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
-
 
 %% GIF, erster Frame
 if (config.sim.saveVideo)
@@ -268,15 +308,20 @@ for i=2 : iterations
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
 	model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
 	
+	fprintf('Calculating KH ...\n');
+	keyholestart = tic;
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
+	keyholetime(i) = toc(keyholestart);
+	fprintf('done. (%0.1f sec)\n', keyholetime(i));
+	
 	
 	%% Mesh updaten
 	fprintf('Remeshing ... ');
 	meshstart = tic;
 	model.geom('geom1').run;
 	updateMesh(model);
-	meshtime = toc(meshstart);
-	fprintf('done. (%0.1f sec)\n', meshtime);
+	meshtime(i) = toc(meshstart);
+	fprintf('done. (%0.1f sec)\n', meshtime(i));
 	
 	stats = mphmeshstats(model);
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
@@ -292,8 +337,10 @@ for i=2 : iterations
 	fprintf('Solving model ... ');
 	solverstart = tic;
 	Solver.runAll;
-	solvertime = toc(solverstart);
-	fprintf('done. (%0.1f min)\n', solvertime/60);
+	solvertime(i) = toc(solverstart);
+	fprintf('done. (%0.1f min)\n', solvertime(i)/60);
+	
+	model.result.numerical('int1').appendResult;
 	
 	%% Temperaturfeld Plotten
 	if (config.sim.showPlot)
@@ -303,6 +350,15 @@ for i=2 : iterations
 		drawnow;
 	end
 	
+	%% MPH speichern
+	if (config.sim.saveTimeStepMph)
+		fprintf('Saving mph file ... ');
+		flushDiary(logPath);
+		mphsave(model, sprintf(timeStepMphPath, i));
+		fprintf('done.\n');
+		flushDiary(logPath);
+	end
+
 	%% Schnitt speichern
 	if (config.sim.saveSections)
 		saveSection(model, i, sectionCoords, sectionPath);
