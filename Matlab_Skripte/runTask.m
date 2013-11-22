@@ -153,8 +153,8 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-%createMesh(model);
-createSimpleMesh(model);
+createMesh(model);
+%createSimpleMesh(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
