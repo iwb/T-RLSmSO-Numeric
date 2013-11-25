@@ -13,6 +13,7 @@ gifPath = [output_path 'animation.gif'];
 sectionPath = [output_path 'Section_%02d.mat'];
 timeStepMphPath = [output_path 'Model_%02d.mph'];
 poolPath = [output_path 'Pool.mat'];
+timesPath = [output_path 'Iteration_Times.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
 	error('To save the video, you must enable the plot!');
@@ -47,7 +48,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 600e-6; % [m]
+	resolution = 20e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
@@ -72,11 +73,12 @@ save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 2; %length(KH_x);
+iterations = 17;%length(KH_x);
 
-solvertime	= zeros(iterations, 1);
-meshtime	= zeros(iterations, 1);
 keyholetime	= zeros(iterations, 1);
+meshtime	= zeros(iterations, 1);
+solvertime	= zeros(iterations, 1);
+pooltime    = zeros(iterations, 1);
 
 i = 1; % Loop-runrolling für die erste Iteration
 
@@ -111,7 +113,7 @@ model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(1)));
 model.param.set('Cyl_r', sprintf('%.12e [m]', (config.osz.Amplitude + config.las.WaistSize) * 1.5));
 
 %% Geometrie erzeugen
-model.geom('geom1').feature('fin').set('repairtol', '1.0E-6');
+model.geom('geom1').feature('fin').set('repairtol', '1.0E-4');
 % Blech
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
@@ -153,7 +155,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_62(model);
+createMesh_524(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -248,8 +250,8 @@ if (config.sim.savePool)
 		ProjectedPool = ProjectedPool | squeeze(any(Pool, 1));
 	end
 end
-pooltime = toc(poolstart);
-fprintf('done. (%0.1f min)\n', pooltime/60);
+pooltime(i) = toc(poolstart);
+fprintf('done. (%0.1f min)\n', pooltime(i)/60);
 
 %% Fortschritt
 itertime = toc(iterstart);
@@ -379,8 +381,8 @@ for i=2 : iterations
 			end
 			ProjectedPool = ProjectedPool | projection;
 		end
-		pooltime = toc(poolstart);
-		fprintf('done. (%0.1f min)\n', pooltime/60);
+		pooltime(i) = toc(poolstart);
+		fprintf('done. (%0.1f min)\n', pooltime(i)/60);
 	end
 	
 	%% GIF Animation erzeugen
@@ -404,8 +406,8 @@ for i=2 : iterations
 	flushDiary(logPath);
 	
 	if PoolConvergence >= config.sim.PoolConvergenceThreshold
-		fprintf('The Pool convergence theshold is reached :-)\n');
-		break;
+		fprintf('The Pool convergence threshold is reached :-)\n');
+		%break;
 	end
 end
 
@@ -416,6 +418,12 @@ fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime
 
 
 %% Daten speichern
+fprintf('Saving iteration times ... ');
+flushDiary(logPath);
+save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime');
+fprintf('done.\n');
+flushDiary(logPath);
+
 if (config.sim.saveMph)
 	fprintf('Saving mph file ... ');
 	flushDiary(logPath);
@@ -456,6 +464,10 @@ diary off
 
 % Auf der Workstation die COMSOL-Lizenz freigeben
 if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
+	exit
+end
+
+if (strcmp(getenv('COMPUTERNAME'), 'POONS'))
 	exit
 end
 
