@@ -48,7 +48,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 20e-6; % [m]
+	resolution = 200e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
@@ -73,12 +73,13 @@ save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 17;%length(KH_x);
+iterations = 6;%length(KH_x);
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
 solvertime	= zeros(iterations, 1);
 pooltime    = zeros(iterations, 1);
+energy      = zeros(iterations, 1);
 
 i = 1; % Loop-runrolling für die erste Iteration
 
@@ -150,12 +151,12 @@ model.physics('ht').feature('temp1').selection.named('KH_Bounds');
 model.physics('ht').feature('temp1').set('T0', 1, config.mat.VaporTemperature);
 model.physics('ht').feature('temp1').name('KH_Rand');
 
-%% Mesh erzeugen
+%% Mesh erzeugen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_524(model);
+createMesh_28(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -212,11 +213,7 @@ model.result.numerical.create('int1', 'IntVolume');
 model.result.numerical('int1').setIndex('looplevelinput', 'last', 0);
 model.result.numerical('int1').selection.all;
 model.result.numerical('int1').set('expr', 'material.rho * material.Cp * (T - 293.15[K])');
-
-model.result.table.create('tbl1', 'Table');
-model.result.table('tbl1').comments('Internal Energy');
-model.result.numerical('int1').set('table', 'tbl1');
-model.result.numerical('int1').setResult;
+energy(i) = model.result.numerical('int1').getReal();
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
@@ -341,7 +338,13 @@ for i=2 : iterations
 	solvertime(i) = toc(solverstart);
 	fprintf('done. (%0.1f min)\n', solvertime(i)/60);
 	
-	model.result.numerical('int1').appendResult;
+    %% Volumenintegration aktualisieren
+    
+    model.result.numerical('int1').set('data', ['dset' num2str(i)]);
+    % Workaround
+    model.result.numerical('int1').selection.named('KH_Domain');
+    model.result.numerical('int1').selection.all;
+    energy(i) = model.result.numerical('int1').getReal();
 	
 	%% Temperaturfeld Plotten
 	if (config.sim.showPlot)
@@ -411,16 +414,20 @@ for i=2 : iterations
 	end
 end
 
+%% Schleife beendet, Zeit ausgeben
 clearvars Solver
 
 alltime = toc(allstart);
 fprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime, 3600)/60);
 
+%% Eingebrachte leitung in jeder iteration berechnen
+addedEnergy = diff([0; energy]);
+iterpower = addedEnergy ./ dt(1:iterations)';
 
 %% Daten speichern
 fprintf('Saving iteration times ... ');
 flushDiary(logPath);
-save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime');
+save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime', 'energy', 'iterpower');
 fprintf('done.\n');
 flushDiary(logPath);
 
@@ -432,7 +439,7 @@ if (config.sim.saveMph)
 	flushDiary(logPath);
 end
 
-% Pool speichern
+%% Pool speichern
 if (config.sim.savePool)
 	fprintf('Saving pool ... ');
 	flushDiary(logPath);
@@ -442,6 +449,7 @@ if (config.sim.savePool)
 	flushDiary(logPath);
 end
 
+%% Endtemepraturen speichern
 if (config.sim.saveFinalTemps)
 	fprintf('Saving final temps ... ');
 	flushDiary(logPath);
@@ -462,7 +470,7 @@ end
 
 diary off
 
-% Auf der Workstation die COMSOL-Lizenz freigeben
+%% Auf der Workstation die COMSOL-Lizenz freigeben
 if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
 	exit
 end
