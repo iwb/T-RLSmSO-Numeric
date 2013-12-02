@@ -14,6 +14,7 @@ sectionPath = [output_path 'Section_%02d.mat'];
 timeStepMphPath = [output_path 'Model_%02d.mph'];
 poolPath = [output_path 'Pool.mat'];
 timesPath = [output_path 'Iteration_Times.mat'];
+workspacePath = [output_path 'workspace.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
 	error('To save the video, you must enable the plot!');
@@ -466,9 +467,12 @@ if (config.sim.saveFinalTemps)
 	save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
 	fprintf('done.\n');
 	flushDiary(logPath);
+	clear finalCoords resolution range_x range_y range_z XX YY ZZ
 end
 
 diary off
+
+save(workspacePath);
 
 %% Auf der Workstation die COMSOL-Lizenz freigeben
 if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
