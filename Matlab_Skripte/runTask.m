@@ -115,7 +115,7 @@ model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(1)));
 model.param.set('Cyl_r', sprintf('%.12e [m]', (config.osz.Amplitude + config.las.WaistSize) * 1.5));
 
 %% Geometrie erzeugen
-model.geom('geom1').feature('fin').set('repairtol', '1.0E-4');
+model.geom('geom1').feature('fin').set('repairtol', '1.0E-5');
 % Blech
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
@@ -141,6 +141,9 @@ fprintf('done. (%0.1f sec)\n', keyholetime(i));
 initMaterial(model, config);
 
 %% Randbedingungen setzen
+
+model.physics('ht').feature('init1').set('T', 1, sprintf('%d[K]', config.mat.AmbientTemperature));
+
 % Keyhole Innenraum
 model.physics('ht').feature.create('init2', 'init', 3);
 model.physics('ht').feature('init2').selection.named('KH_Domain');
@@ -309,7 +312,15 @@ for i=2 : iterations
 	
 	fprintf('Calculating KH ...\n');
 	keyholestart = tic;
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
+	
+	stemp = SensorTemps(1);
+ 	distance = sqrt((KH_x(i) - Sensor_x(i)).^2 + (KH_y(i) - Sensor_y(i)).^2);
+	kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+	eta = -speedArray(i) / kappa;
+ 	mattemp = (stemp - config.mat.VaporTemperature * exp(eta*distance)) / ...
+		(1 - exp(eta*distance));
+	
+	KH_depth = updateKeyhole(model, geometry, speedArray(i), mattemp, config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	
