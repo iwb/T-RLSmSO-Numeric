@@ -5,6 +5,7 @@ diary off;
 addpath('../Keyhole');
 
 config = initConfig;
+config.osz.Amplitude=0; config.osz.FeedVelocity=0.03; config.mat.AmbientTemperature = 400; config.dis.SampleThickness=0.004;
 
 output_path = '../Ergebnisse/';
 
@@ -74,7 +75,7 @@ save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 6;%length(KH_x);
+iterations = 10;%length(KH_x);
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -320,7 +321,39 @@ for i=2 : iterations
  	mattemp = (stemp - config.mat.VaporTemperature * exp(eta*distance)) / ...
 		(1 - exp(eta*distance));
 	
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), mattemp, config);
+	if(i == iterations)
+	return;
+	end
+	apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
+	
+	
+	%%
+	SensorCoords(1, :) = linspace(apex_pos,  0.005, 100);
+	SensorCoords(2, :) = 0;
+	SensorCoords(3, :) = 0;
+ 	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+	
+	iimax = length(SensorTemps);
+	for ii = 1:iimax
+		stemp = SensorTemps(ii);
+		distance(ii) = SensorCoords(1, ii) - apex_pos;
+		kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+		eta = -speedArray(i-1) / kappa;
+		mattemp(ii) = (stemp - config.mat.VaporTemperature * exp(eta*distance(ii))) / ...
+		(1 - exp(eta*distance(ii)));
+	end
+	
+	Pe = config.las.WaistSize / kappa * speedArray(i-1);	
+	predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-Pe * distance);
+
+	
+	plot(distance, SensorTemps); hold all;
+	plot(distance, predicted);
+	plot(distance, mattemp); hold off;
+	refline(0, config.mat.AmbientTemperature);
+	%%
+	
+	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	
