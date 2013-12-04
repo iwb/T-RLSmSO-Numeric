@@ -326,32 +326,33 @@ for i=2 : iterations
 	end
 	apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
 	
-	
-	%%
-	SensorCoords(1, :) = linspace(apex_pos,  0.005, 100);
-	SensorCoords(2, :) = 0;
-	SensorCoords(3, :) = 0;
- 	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-	
-	iimax = length(SensorTemps);
-	for ii = 1:iimax
-		stemp = SensorTemps(ii);
-		distance(ii) = SensorCoords(1, ii) - apex_pos;
-		kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
-		eta = -speedArray(i-1) / kappa;
-		mattemp(ii) = (stemp - config.mat.VaporTemperature * exp(eta*distance(ii))) / ...
-		(1 - exp(eta*distance(ii)));
-	end
-	
-	Pe = config.las.WaistSize / kappa * speedArray(i-1);	
-	predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-Pe * distance);
+	if (false)
+        %%
+        clear SensorCoords;
+        SensorCoords(1, :) = linspace(apex_pos,  0.003, 100);
+        SensorCoords(2, :) = 0;
+        SensorCoords(3, :) = 0;
+        SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 
-	
-	plot(distance, SensorTemps); hold all;
-	plot(distance, predicted);
-	plot(distance, mattemp); hold off;
-	refline(0, config.mat.AmbientTemperature);
-	%%
+        iimax = length(SensorTemps);
+        for ii = 1:iimax
+            stemp = SensorTemps(ii);
+            distance(ii) = SensorCoords(1, ii) - apex_pos;
+            kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+            eta = -speedArray(i-1) / kappa;
+            mattemp(ii) = (stemp - config.mat.VaporTemperature * exp(eta*distance(ii))) / ...
+            (1 - exp(eta*distance(ii)));
+        end
+
+        Pe = config.las.WaistSize / kappa * speedArray(i-1);	
+        predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-Pe * distance/config.las.WaistSize);
+
+
+        plot(distance, SensorTemps); hold all;
+        plot(distance, predicted);
+        plot(distance, mattemp); hold off;
+        refline(0, config.mat.AmbientTemperature);
+    end
 	
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
