@@ -3,7 +3,7 @@ function depth = updateKeyhole(model, geometry, speed, temp, config)
 %   Detailed explanation goes here
 
 khg = calcKeyhole(config.dis.KeyholeResolution, speed, temp, config);
-
+assignin('base', 'khg', khg);
 CenterArray = khg(2, :);
 % Calculate the differences of the centers
 DisplacementArray = diff(CenterArray);
@@ -67,6 +67,11 @@ fprintf('Keyhole was build out of %d elements, %4.0fµm deep.\n', i, -depth * 1e6
 Cyl_height = min(config.dis.SampleThickness, -depth * 1.5);
 model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
 
+prevR = sscanf(char(model.param.get('Cyl_r')), '%f [m]');
+maxR1 = RadiusArray(1) - CenterArray(1) + config.osz.Amplitude;
+maxR2 = RadiusArray(i+1) - CenterArray(i+1) + config.osz.Amplitude;
+newR = max([prevR, 1.3*maxR1 , 1.3*maxR2]);
+model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
 
