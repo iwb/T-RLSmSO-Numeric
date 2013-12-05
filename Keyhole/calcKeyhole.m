@@ -101,23 +101,28 @@ while (true)
 	func2 = @(alpha) khz_func2(alpha, currentA, arguments, param);
 	alpha_interval(1) = 0.5*currentA; % Minimalwert
 	alpha_interval(2) = 1.05 * currentAlpha; % Maximalwert
-	currentAlpha = fzero(func2, alpha_interval);
+	try
+		currentAlpha = fzero(func2, alpha_interval);
+	catch err
+		Reason = struct('Num', 3, 'Name', sprintf('Abbruch mangels Nullstelle beim Radius. Endgültige Tiefe: %3.0f\n', zeta));
+		break;
+	end
 	
 	% Abbruchkriterium
 	if(isnan(currentAlpha))
-		Reason = struct('Num', 3, 'Name', sprintf('Abbruch weil Radius=Nan. Endgültige Tiefe: %3.0f\n', zeta));
+		Reason = struct('Num', 4, 'Name', sprintf('Abbruch weil Radius=Nan. Endgültige Tiefe: %3.0f\n', zeta));
 		break;
 	end
 	if (currentAlpha < 1e-12)
-		Reason = struct('Num', 4, 'Name', sprintf('Abbruch weil Keyhole geschlossen. Endgültige Tiefe: %3.0f\n', zeta));
+		Reason = struct('Num', 5, 'Name', sprintf('Abbruch weil Keyhole geschlossen. Endgültige Tiefe: %3.0f\n', zeta));
 		break;
 	end
 	if (zindex > 10 && currentAlpha > arguments.prevRadius)
-		Reason = struct('Num', 5, 'Name', sprintf('Abbruch weil Radius steigt / KH geschlossen. Endgültige Tiefe: %3.0f\n', zeta));
+		Reason = struct('Num', 6, 'Name', sprintf('Abbruch weil Radius steigt / KH geschlossen. Endgültige Tiefe: %3.0f\n', zeta));
 		break;
 	end
 	if (zindex >= max_zindex)
-		Reason = struct('Num', 6, 'Name', sprintf('Abbruch weil Blechtiefe erreicht.\n'));
+		Reason = struct('Num', 7, 'Name', sprintf('Abbruch weil Blechtiefe erreicht.\n'));
 		break;
 	end
 	
