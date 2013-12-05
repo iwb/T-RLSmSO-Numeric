@@ -3,9 +3,9 @@ function TField =  zLayers(Radius, Center, Pe, waistSize)
     Alpha = Radius ./ waistSize;
     A = (Center + Radius) ./ waistSize;
 
-    LayerArray = [1, 9, 18, 26, 23];
-    x_range = (-0.5:1e-2:0.5) * 1e-3;
-	y_range = (-0.5:1e-2:0.5) * 1e-3;
+    LayerArray = 1;
+    x_range = (Center + Radius) + (0:1e-6:1e-4);%(-0.5:1e-2:0.5) * 1e-3;
+	y_range = 0;%(-0.5:1e-2:0.5) * 1e-3;
 	
 	x_range = x_range ./ waistSize;
 	y_range = y_range ./ waistSize;

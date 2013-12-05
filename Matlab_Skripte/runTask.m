@@ -7,10 +7,9 @@ addpath('../Keyhole');
 config = initConfig;
 config.osz.Power = 2000;
 config.osz.Amplitude=0;
-config.osz.FeedVelocity=3;
-config.mat.AmbientTemperature = 400;
-config.dis.SampleThickness=0.002;
-config.sim.TimeSteps = 17;
+config.osz.FeedVelocity=0.3;
+config.mat.AmbientTemperature = 300;
+config.dis.SampleThickness=0.0025;
 config.sim.saveVideo = false;
 config.sim.showPlot = false;
 
@@ -168,7 +167,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_28(model);
+createMesh_325(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -330,7 +329,7 @@ for i=2 : iterations
         %%
 		x_r = 1e-4;
 		apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
-		fit_factor = 0.2;
+		fit_factor = 1;
         clear SensorCoords;
         SensorCoords(1, :) = linspace(apex_pos, apex_pos + x_r, 100);
         SensorCoords(2, :) = 0;
@@ -358,6 +357,17 @@ for i=2 : iterations
         refline(0, config.mat.AmbientTemperature);
 		ylim([-500 3200]);
 		xlim([0 x_r]);
+    end
+    
+    if(false)
+        %%
+        clear SensorCoords
+        SensorCoords(1, :) = linspace(apex_pos-10*x_r, apex_pos + 2*x_r, 300);
+        SensorCoords(2, :) = 0;
+                SensorCoords(3, :) = 0;
+        SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+        distance = SensorCoords(1, :) - apex_pos;
+        plot(distance, SensorTemps); 
     end
 	
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);

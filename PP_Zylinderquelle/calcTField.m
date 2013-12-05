@@ -1,5 +1,5 @@
 function tempField = calcTField(winkel, abstand, alpha, Pe)
-	% Aufteilen der Zylinderquellenl√∂sung in drei Formeln
+	% Aufteilen der Zylinderquellenlˆsung in drei Formeln
 	factor1 = @(abstand, winkel) exp((-Pe/2) .* abstand .* cos(winkel));
 	factor2 = @(abstand) (besseli(0, Pe.*alpha/2) ./ besselk(0, Pe.*alpha/2)) .* besselk(0, Pe.*abstand/2);
 	factor3 = @(abstand, winkel, n) (besseli(n, Pe.*alpha/2) ./ besselk(n, Pe.*alpha/2)) .* besselk(n, Pe.*abstand/2) .* cos(n.*winkel);
@@ -9,7 +9,7 @@ function tempField = calcTField(winkel, abstand, alpha, Pe)
 	theta2 = factor2(abstand);
 	
 	% Die dritte Formel ist eine Reihe --> Abbruch der Summation wenn
-	% zus√§tzlicher Term < 1e-9 ist
+	% zus‰tzlicher Term < 1e-9 ist
 	theta3 = zeros(1, length(abstand));
 	i = 1;
 	while true
