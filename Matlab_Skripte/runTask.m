@@ -422,14 +422,16 @@ for i=2 : iterations
 			Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 			Temps = reshape(Temps, poolPageSize);
 			Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
-			projection = squeeze(any(Pool, 1));
-			if any(any(projection & ~ProjectedPool)) % If new points are added
-				PoolConvergence = 0;	% Reset the counter
-			else
-				PoolConvergence = PoolConvergence + 1;
-			end
-			ProjectedPool = ProjectedPool | projection;
 		end
+		
+		projection = squeeze(any(Pool, 1));
+		if any(any(projection & ~ProjectedPool)) % If new points are added
+			PoolConvergence = 0;	% Reset the counter
+		else
+			PoolConvergence = PoolConvergence + 1;
+		end
+		ProjectedPool = ProjectedPool | projection;
+		
 		pooltime(i) = toc(poolstart);
 		fprintf('done. (%0.1f min)\n', pooltime(i)/60);
 	end
