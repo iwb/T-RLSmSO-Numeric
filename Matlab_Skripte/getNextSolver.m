@@ -1,16 +1,21 @@
-function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt)
+function [ New_Solver ] = getNextSolver(Model, Old_Solver, dt, varargin)
 %NEXT_SOLVER Summary of this function goes here
 %   Detailed explanation goes here
 
 	import com.comsol.model.*
 	import com.comsol.model.util.*
-
+    
 	persistent SolverIndex;
 	if isempty(SolverIndex)
 		SolverIndex = 2;
 	else
 		SolverIndex = SolverIndex + 1;
 	end
+
+    if (nargin == 4)
+        SolverIndex = varargin{1};
+        return;
+    end
 
 	new_tag = ['sol_' num2str(SolverIndex)];
 	new_dset = ['dset' num2str(SolverIndex)];

@@ -7,7 +7,7 @@ addpath('../Keyhole');
 config = initConfig;
 config.osz.Power = 2000;
 config.osz.Amplitude=0;
-config.osz.FeedVelocity=0.3;
+config.osz.FeedVelocity=1;
 config.mat.AmbientTemperature = 300;
 config.dis.SampleThickness=0.0025;
 config.sim.saveVideo = false;
@@ -81,7 +81,7 @@ save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 11;%length(KH_x);
+iterations = 31;%length(KH_x);
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -306,10 +306,10 @@ for i=2 : iterations
 	Solver = getNextSolver(model, Solver, dt(i));
 	
 	%% Temperatur an der Stelle des nächsten KH messen
-% 	SensorCoords(3, :) = linspace(0, KH_depth, 5);
-% 	SensorCoords(1, :) = Sensor_x(i);
-% 	SensorCoords(2, :) = Sensor_y(i);
-% 	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+	SensorCoords(3, :) = linspace(0, KH_depth, 5);
+	SensorCoords(1, :) = Sensor_x(i);
+	SensorCoords(2, :) = Sensor_y(i);
+	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
  	
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
@@ -325,12 +325,13 @@ for i=2 : iterations
 	end
 	
 	
-	if (true)
+	if (false)
         %%
 		x_r = 1e-4;
 		apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
-		fit_factor = 1;
+		fit_factor = 1.0;
         clear SensorCoords;
+        clear distance;
         SensorCoords(1, :) = linspace(apex_pos, apex_pos + x_r, 100);
         SensorCoords(2, :) = 0;
         SensorCoords(3, :) = 0;
@@ -346,7 +347,7 @@ for i=2 : iterations
             (1 - exp(eta*distance(ii)));
 		end
 		
-		Pe = config.las.WaistSize / kappa * config.osz.FeedVelocity
+		Pe = config.las.WaistSize / kappa * config.osz.FeedVelocity;
 
         predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-distance*fit_factor * speedArray(i-1)/kappa);
 
@@ -359,18 +360,45 @@ for i=2 : iterations
 		xlim([0 x_r]);
     end
     
+    if(false)   
+        %%
+        lookAhead = 6 * kappa / (speedArray(i-1)); % [m]
+        
+        clear SensorCoords;
+        clear distance;
+        SensorCoords(1, :) = linspace(apex_pos, apex_pos + lookAhead, 200);
+        SensorCoords(2, :) = 0;
+        SensorCoords(3, :) = 0;
+        SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+        
+        SensorTemps(end)
+        
+        figure;
+        plot(SensorTemps)
+    end
+    
     if(false)
         %%
         clear SensorCoords
-        SensorCoords(1, :) = linspace(apex_pos-10*x_r, apex_pos + 2*x_r, 300);
+        SensorCoords(1, :) = linspace(config.dis.StartX, apex_pos + 2*x_r, 300);
         SensorCoords(2, :) = 0;
                 SensorCoords(3, :) = 0;
         SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+        
         distance = SensorCoords(1, :) - apex_pos;
+        figure;
         plot(distance, SensorTemps); 
     end
+    
+    if(false)
+        %%
+        addpath('../PP_Zylinderquelle');
+        tf = zLayers(khg(3,1), khg(2,1), Pe, config.las.WaistSize);
+        hold all;
+        plot((0:1e-6:1e-4), tf, 'o', 'Color', [0.6 0 1]); hold off;
+    end
 	
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
+	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	
