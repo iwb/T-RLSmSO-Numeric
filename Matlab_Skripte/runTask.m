@@ -81,7 +81,7 @@ save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 31;%length(KH_x);
+iterations = config.sim.TimeSteps;%length(KH_x);
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -167,7 +167,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_325(model);
+createMesh_408(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -397,8 +397,8 @@ for i=2 : iterations
         hold all;
         plot((0:1e-6:1e-4), tf, 'o', 'Color', [0.6 0 1]); hold off;
     end
-	
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), mean(SensorTemps), config);
+	% mean(SensorTemps)
+	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	

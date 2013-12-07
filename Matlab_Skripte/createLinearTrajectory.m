@@ -4,11 +4,15 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
 
 	ts = config.sim.TimeSteps;
 	dist = 1e-3;
+    
+    dx_last = 1e-6;
+    cc = [ts, -ts^2; 1, -2*ts] \ [dist; dx_last];
+    KH_x = config.dis.StartX + cc(1) * (1:ts) - cc(2) * (1:ts).^2; % [mm]
 	
 	tArray = linspace(0, dist ./ config.osz.FeedVelocity, config.sim.TimeSteps); % = d/v * [t]
 	pArray =  linspace(0, dist, config.sim.TimeSteps); % = d * [t]
 	
-	KH_x = linspace(config.dis.StartX, config.dis.StartX + dist, ts);
+	%KH_x = linspace(config.dis.StartX, config.dis.StartX + dist, ts);
 	KH_y = zeros(1, ts);
     
 	phiArray = zeros(1, ts);
@@ -22,8 +26,13 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
     
     
     %% Adjust timestamps
-	tArray = tArray + dist ./ config.osz.FeedVelocity / (config.sim.TimeSteps-1);
-	pArray = pArray + dist / (config.sim.TimeSteps-1);
+	% Sensorpunkte in einen passenden Abstand setzen
+    kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);       
+    lookAhead = 6 * kappa ./ (speedArray.^2); % [s]
+    
+        
+	tArray = tArray + lookAhead;
+	pArray = pArray + lookAhead .* 2*pi*config.osz.Frequency;
 
 	Sensor_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
