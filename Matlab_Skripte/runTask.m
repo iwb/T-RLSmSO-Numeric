@@ -7,7 +7,7 @@ addpath('../Keyhole');
 config = initConfig;
 config.osz.Power = 2000;
 config.osz.Amplitude=0;
-config.osz.FeedVelocity=1;
+config.osz.FeedVelocity=0.2;
 config.mat.AmbientTemperature = 300;
 config.dis.SampleThickness=0.0025;
 config.sim.saveVideo = false;
@@ -318,14 +318,9 @@ for i=2 : iterations
 	model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
 	
 	fprintf('Calculating KH ...\n');
-	keyholestart = tic;
-		
-	if(i == iterations)
-	return;
-	end
+	keyholestart = tic;	
 	
-	
-	if (false)
+	if (true)
         %%
 		x_r = 1e-4;
 		apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
@@ -390,12 +385,14 @@ for i=2 : iterations
         plot(distance, SensorTemps); 
     end
     
-    if(false)
+    if(true)
         %%
         addpath('../PP_Zylinderquelle');
         tf = zLayers(khg(3,1), khg(2,1), Pe, config.las.WaistSize);
         hold all;
         plot((0:1e-6:1e-4), tf, 'o', 'Color', [0.6 0 1]); hold off;
+        
+        saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
     end
 	% mean(SensorTemps)
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
