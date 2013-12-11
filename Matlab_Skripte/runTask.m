@@ -4,16 +4,6 @@ clc;
 diary off;
 addpath('../Keyhole');
 
-% Twittern geht erst ab 2013b und neuer.
-if strcmp(version('-release'), '2013b')
-    addpath('../twitty');
-    try
-       load('credentials.mat');
-       tw = twitty(c);
-    catch
-    end
-end
-
 config = initConfig;
 config.osz.Power = 2000;
 config.osz.Amplitude=0;
@@ -285,11 +275,7 @@ itertime = toc(iterstart);
 remaining = (iterations - i) * itertime;
 progress_msg = sprintf('Iteration %2d/%2d was finished in %.1f minutes\nApproximately %4.1f minutes remaining (%s).\n\n', i, iterations, itertime/60, remaining/60,  datestr(now + remaining/86400, 'yyyy-mm-dd HH:MM:SS'));
 fprintf(progress_msg);
-
-%% Twittern
-if exist('tw', 'var')
-    tw.updateStatus(progress_msg);
-end
+tweet(progress_msg);
 
 %% GIF, erster Frame
 if (config.sim.saveVideo)
@@ -520,10 +506,7 @@ for i=2 : iterations
     end
     
     fprintf(progress_msg);
-    % Twittern
-    if exist('tw', 'var')
-        tw.updateStatus(progress_msg);
-    end
+    tweet(progress_msg);
     
 	%% Flush diary
 	flushDiary(logPath);
@@ -540,10 +523,7 @@ clearvars Solver
 alltime = toc(allstart);
 progress_msg = sprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime, 3600)/60);
 fprintf(progress_msg);
-% Twittern
-if exist('tw', 'var')
-    tw.updateStatus(progress_msg);
-end
+tweet(progress_msg);
 
 %% Eingebrachte Leistung in jeder Iteration berechnen
 addedEnergy = diff([0; energy]);
@@ -598,10 +578,7 @@ save(workspacePath);
 
 progress_msg = sprintf('\nWorkspace saved, calculation finished.\n');
 fprintf(progress_msg);
-% Twittern
-if exist('tw', 'var')
-    tw.updateStatus(progress_msg);
-end
+tweet(progress_msg);
 
 diary off
 %% Auf der Workstation die COMSOL-Lizenz freigeben
