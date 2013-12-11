@@ -274,7 +274,7 @@ fprintf('done. (%0.1f min)\n', pooltime(i)/60);
 itertime = toc(iterstart);
 remaining = (iterations - i) * itertime;
 fprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, itertime/60);
-fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
+fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'yyyy-mm-dd HH:MM:SS'));
 
 %% GIF, erster Frame
 if (config.sim.saveVideo)
@@ -500,7 +500,7 @@ for i=2 : iterations
 	if (i < iterations)
 		itertime = 0.8 * itertime + 0.2 * thistime;
 		remaining = (iterations - i) * itertime;
-		fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'HH:MM:SS'));
+		fprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'yyyy-mm-dd HH:MM:SS'));
 	end
 	
 	%% Flush diary
