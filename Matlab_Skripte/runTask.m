@@ -215,9 +215,9 @@ model.result('pg').set('t', 0.1);
 iterstart = tic;
 
 fprintf('\nCurrent Time: %s\n', datestr(now));
-
 fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
 
+tweet(sprintf('Starting calculation (%2d/%2d timesteps, %3d elements)', iterations, config.sim.TimeSteps, stats.numelem(2)));
 
 %% Modell lösen
 fprintf('Solving model ... ');
