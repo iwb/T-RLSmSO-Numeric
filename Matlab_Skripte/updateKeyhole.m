@@ -70,7 +70,7 @@ model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
 prevR = sscanf(char(model.param.get('Cyl_r')), '%f [m]');
 maxR1 = RadiusArray(1) - CenterArray(1) + config.osz.Amplitude;
 maxR2 = RadiusArray(i+1) - CenterArray(i+1) + config.osz.Amplitude;
-newR = max([prevR, 1.5 * maxR1 , 1.5 * maxR2]);
+newR = max([prevR, 2 * maxR1, 3 * maxR2]);
 model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren

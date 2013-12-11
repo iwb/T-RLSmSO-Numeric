@@ -129,10 +129,19 @@ geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.S
 geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
 
 % Fein gemeshter Zylinder
-model.geom('geom1').feature.create('cyl1', 'Cylinder');
-model.geom('geom1').feature('cyl1').set('pos', {'Cyl_x' '0' '-Cyl_h'});
-model.geom('geom1').feature('cyl1').set('h', 'Cyl_h');
-model.geom('geom1').feature('cyl1').set('r', 'Cyl_r');
+% model.geom('geom1').feature.create('cyl1', 'Cylinder');
+% model.geom('geom1').feature('cyl1').set('pos', {'Cyl_x' '0' '-Cyl_h'});
+% model.geom('geom1').feature('cyl1').set('h', 'Cyl_h');
+% model.geom('geom1').feature('cyl1').set('r', 'Cyl_r');
+
+cone = geometry.feature.create('roicone', 'ECone');
+cone.set('axis', [0, 0, -1]);
+cone.set('semiaxes', {'Cyl_r', 'Cyl_r'});
+cone.set('pos', {'Cyl_x' '0' '0'});
+cone.set('h', 'Cyl_h');
+cone.set('displ', [0, 0]);
+cone.set('rat', 0.5);
+cone.set('rot', 0);
 
 %% Keyhole berechnen und in die Geometrie einfügen
 fprintf('Calculating KH ...\n');
@@ -306,10 +315,10 @@ for i=2 : iterations
 	Solver = getNextSolver(model, Solver, dt(i));
 	
 	%% Temperatur an der Stelle des nächsten KH messen
-	SensorCoords(3, :) = linspace(0, KH_depth, 5);
-	SensorCoords(1, :) = Sensor_x(i);
-	SensorCoords(2, :) = Sensor_y(i);
-	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+% 	SensorCoords(3, :) = linspace(0, KH_depth, 5);
+% 	SensorCoords(1, :) = Sensor_x(i);
+% 	SensorCoords(2, :) = Sensor_y(i);
+% 	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
  	
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
