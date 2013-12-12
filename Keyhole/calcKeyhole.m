@@ -133,6 +133,10 @@ while (true)
 end
 zindex = zindex - 1;
 
+if (A0 - 2*alpha0) > (Apex(1) - 2*Radius(1))
+	alpha0 = A0 - [2, -1] * (Apex(1:2)-Radius(1:2)); % entfernt den Haken
+end
+
 KH_geom = KH_geom(:, 1:zindex+1);
 KH_geom(2:3, 1) = [A0 - alpha0; alpha0];
 KH_geom(2, 2:end) = Apex(1:zindex) - Radius(1:zindex);

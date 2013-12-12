@@ -16,8 +16,8 @@ function plotKeyhole( data )
         
         line([0 0], [0 z_axis(end)], 'Color', [0.5 0.5 0.5])
         hold off;
-        ylabel('Tiefe [w_0]');
-        xlabel('X-Richtung [w_0]');
-        daspect([1 1 1]);
+        ylabel('Tiefe [m]');
+        xlabel('X-Richtung [m]');
+        %daspect([1 1 1]);
         drawnow;        
 end
