@@ -12,7 +12,6 @@ config.mat.AmbientTemperature = 300;
 config.dis.SampleThickness=0.0025;
 config.sim.saveVideo = false;
 config.sim.showPlot = false;
-config.sim.saveTimeStepMph = true;
 config.sim.TimeSteps = 250;
 output_path = '../Ergebnisse/';
 
