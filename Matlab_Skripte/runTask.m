@@ -554,7 +554,7 @@ if (config.sim.savePool)
 	flushDiary(logPath);
 end
 
-%% Endtemepraturen speichern
+%% Endtemperaturen speichern
 if (config.sim.saveFinalTemps)
 	fprintf('Saving final temps ... ');
 	flushDiary(logPath);
