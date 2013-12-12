@@ -14,6 +14,10 @@ function tweet( message )
             catch
             end
         end
-        TwitterObj.updateStatus(message);
+        try
+            TwitterObj.updateStatus(message);
+        catch
+            % Fehler beim twittern werden geschluckt
+        end
     end
 end
