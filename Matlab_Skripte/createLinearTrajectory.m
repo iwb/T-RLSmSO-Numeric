@@ -3,9 +3,9 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
 %   Detailed explanation goes here
 
 	ts = config.sim.TimeSteps;
-	dist = 1e-3;
+	dist = 3e-3;
     
-    dx_last = 1e-6;
+    dx_last = 3e-6;
     cc = [ts, -ts^2; 1, -2*ts] \ [dist; dx_last];
     KH_x = config.dis.StartX + cc(1) * (1:ts) - cc(2) * (1:ts).^2; % [mm]
 	
