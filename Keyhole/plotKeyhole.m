@@ -7,15 +7,25 @@ function plotKeyhole( data )
 		Radius = data(3, :);
 		
         axis ij
-        plot(Center + Radius, z_axis);
+        ce = plot(Center, z_axis, '-.');
+		set(ce,'Color',[.6 .6 .6]); % set the colour to grey
         hold all;
-        p = plot(Center, z_axis, '-.');
-		set(p,'Color',[.7 .7 .7]); % set the colour to grey
-        plot(Center - Radius, z_axis);
 		
+        fr = plot(Center - Radius, z_axis, 'Color', [0 0.4 0]);		
+        ba = plot(Center + Radius, z_axis, 'Color', [0 0 0.8]);
         
-        line([0 0], [0 z_axis(end)], 'Color', [0.5 0.5 0.5])
+        la = line([0 0], [0 z_axis(end)], 'Color', [0.5 0.5 0.5])
+		
+		% VHP
+		vhpx = Center(1) + Radius(1);
+		vhp = scatter(vhpx, -1e-8, 100, [1 0 0], '*');		
         hold off;
+		
+		ylim([z_axis(end) 0]);
+		
+		hleg1 = legend([fr, ba, ce, la, vhp], 'Vorderwand', 'Rückwand', 'Mittelline', 'Laserstrahlachse', 'Vorheizpunkt');
+		set(hleg1,'Location','SouthEast');
+		
         ylabel('Tiefe [m]');
         xlabel('X-Richtung [m]');
         %daspect([1 1 1]);

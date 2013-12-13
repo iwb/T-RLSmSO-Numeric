@@ -50,8 +50,8 @@ function vhp = vhp_dgl(versatz, param)
     %% Rechnen
     for i = 1:steps_t
 
-        dTs = param.kappa/((1-b2)*delta)*(I(i)/param.lambda - b2*(Ts-param.T0)/delta);
-        ddelta = 1/(Ts-param.T0)*(param.kappa*I(i)/param.lambda-dTstemp*delta);
+        dTs = param.kappa/((1-b2)*delta) * (I(i)/param.lambda - b2*(Ts-param.T0)/delta);
+        ddelta = 1/(Ts-param.T0) * (param.kappa*I(i)/param.lambda - dTstemp*delta);
 
         dTstemp = dTs;
         Ts = Ts + dTs * dt;
