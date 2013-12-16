@@ -11,6 +11,8 @@ RadiusArray = khg(3, :);
 RatioArray = RadiusArray(2:end) ./ RadiusArray(1:end-1);
 HeightArray = - diff(khg(1, :));
 
+conetags = cell(0);
+
 persistent maxTag;
 
 if isempty(maxTag)
@@ -41,7 +43,8 @@ for i = 1:size(CenterArray, 2)-1
 	else
 		cone = geometry.feature(['econ_' num2str(i)]);
 	end
-	
+	conetags{end+1} = ['econ_' num2str(i)];
+    
 	ratio = RatioArray(i);
 	height_str = sprintf('%.12e', height);
 
@@ -75,24 +78,30 @@ model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
 
-geometry.run; % Damit die Selektion funktioniert...
+model.geom('geom1').feature.create('dif1', 'Difference');
+model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
+model.geom('geom1').feature('dif1').selection('input2').set(conetags);
 
+geometry.run; % Damit die Selektion funktioniert...
 
 if (maxTag == 0)
     model.selection.create('KH_Domain', 'Explicit');
     model.selection.create('FM_Domain', 'Explicit');
 end
 
-model.selection('KH_Domain').set(3:i+2);
-model.selection('KH_Domain').name('Keyhole_Domain');
+%model.selection('KH_Domain').set(3:i+2);
+%model.selection('KH_Domain').name('Keyhole_Domain');
 
 % Include the cylinder in the fine mesh
-model.selection('FM_Domain').set(2:i+2);
+model.selection('FM_Domain').set(2);
 model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
 if (maxTag == 0)
-    model.selection.create('KH_Bounds', 'Adjacent');
-    model.selection('KH_Bounds').set('input', 'KH_Domain');
+    model.selection.create('KH_Bounds', 'Explicit');   
+    model.selection('KH_Bounds').geom('geom1', 2); 
+    model.selection('KH_Bounds').set(10:209);
+    %model.selection.create('KH_Bounds', 'Adjacent');
+    %model.selection('KH_Bounds').set('input', conetags);
     model.selection('KH_Bounds').name('Keyhole_Bounds');
 end
 

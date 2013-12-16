@@ -16,7 +16,7 @@ function [ config ] = initConfig()
 	config.dis.SampleWidth = 6e-3;		% [m]
 	config.dis.SampleThickness = 0.5e-3;	% [m]
 	config.dis.SampleLength = 12e-3;	% [m]
-	config.dis.KeyholeResolution = 40;	% [µm]
+	config.dis.KeyholeResolution = 10;	% [µm]
 	config.dis.StartX = 2e-3;			% [m]
 	config.dis.MinimumElemSize = 28e-6;	% [m]
 	% A lower value gives a finer mesh along curved boundaries.
@@ -34,7 +34,7 @@ function [ config ] = initConfig()
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
 
-	config.sim.TimeSteps = 100;					% [-]
+	config.sim.TimeSteps = 200;					% [-]
 	config.sim.Oscillations = 8.5;				% [-] X.5 recommended
 	
 	% Number of timesteps in which the projected pool needs to stay
