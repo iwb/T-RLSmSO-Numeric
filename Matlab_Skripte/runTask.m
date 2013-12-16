@@ -5,14 +5,7 @@ diary off;
 addpath('../Keyhole');
 
 config = initConfig;
-config.osz.Power = 2000;
-config.osz.Amplitude=0;
-config.osz.FeedVelocity=0.2;
-config.mat.AmbientTemperature = 300;
-config.dis.SampleThickness=0.0025;
-config.sim.saveVideo = false;
-config.sim.showPlot = false;
-config.sim.TimeSteps = 250;
+
 output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
@@ -185,11 +178,12 @@ fprintf('done. (%0.1f sec)\n', meshtime(i));
 stats = mphmeshstats(model);
 fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 
-subplot(2, 1, 1);
-mphmesh(model);
-drawnow;
-
-input('Generated Mesh. Enter to continue...');
+if (config.sim.confirmMesh)
+    subplot(2, 1, 1);
+    mphmesh(model);
+    drawnow;
+    input('Generated Mesh. Enter to continue...');
+end
 
 allstart = tic;
 
