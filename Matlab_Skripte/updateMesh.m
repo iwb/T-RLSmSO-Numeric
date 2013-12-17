@@ -1,5 +1,9 @@
-function updateMesh( model )
-%UPDATEMESH Summary of this function goes here
+function [meshtime,stats] =  updateMesh( model )
+%UPDATEMESH Updates the mesh bc the geometry has changed
+	
+    fprintf('Remeshing ... ');
+	meshstart = tic;
+	model.geom('geom1').run;
 
 	% If there is a fine mesh region, reset the selection because the KH
 	% may have changed.
@@ -8,5 +12,11 @@ function updateMesh( model )
 	end
 	
 	model.mesh('mesh1').run;
+    
+    meshtime = toc(meshstart);
+	fprintf('done. (%0.1f sec)\n', meshtime(i));
+	
+	stats = mphmeshstats(model);
+	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 end
 
