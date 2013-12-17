@@ -71,11 +71,11 @@ end
 %% Zeit- und Ortsschritte festlegen
 [KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x] = createLinearTrajectory(config);
 
-save([output_path 'KH_Coords.mat'], 'KH_x', 'KH_y', 'dt');
+save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = config.sim.TimeSteps;%length(KH_x);
+iterations = 50; %config.sim.TimeSteps;
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
