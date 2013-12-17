@@ -14,7 +14,7 @@ function plotKeyhole( data )
         fr = plot(Center - Radius, z_axis, 'Color', [0 0.4 0]);		
         ba = plot(Center + Radius, z_axis, 'Color', [0 0 0.8]);
         
-        la = line([0 0], [0 z_axis(end)], 'Color', [0.5 0.5 0.5])
+        la = line([0 0], [0 z_axis(end)], 'Color', [0.5 0.5 0.5]);
 		
 		% VHP
 		vhpx = Center(1) + Radius(1);
