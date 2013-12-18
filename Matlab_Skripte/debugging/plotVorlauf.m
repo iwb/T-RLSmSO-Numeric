@@ -1,6 +1,7 @@
 if(true)
     %%
     x_r = 1e-4;
+    
     apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
     fit_factor = 1.0;
     clear SensorCoords;
@@ -33,9 +34,11 @@ if(true)
     xlim([0 x_r]);
     
     addpath('../PP_Zylinderquelle');
-    tf = zLayers(khg(3,1), khg(2,1), Pe, config.las.WaistSize);
+    tf = Zyl_Vorlauf(khg, Pe, config, 0, distance);
+    
     hold all;
-    plot((0:1e-6:1e-4), tf, 'o', 'Color', [0.6 0 1]); hold off;
+    plot(distance, tf, '--', 'Color', [0.6 0 1]);
+    hold off;
     
     saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
 end
