@@ -13,7 +13,7 @@ function [ config ] = initConfig()
 	config.osz.Power = 2000;    		% [W]
 	config.osz.Focus = 0;				% [m] above Surface
 
-	config.dis.SampleWidth = 4e-3;		% [m]
+	config.dis.SampleWidth = 6e-3;		% [m]
 	config.dis.SampleThickness = 2.5e-3;	% [m]
 	config.dis.SampleLength = 10e-3;	% [m]
 	config.dis.KeyholeResolution = 10;	% [µm]

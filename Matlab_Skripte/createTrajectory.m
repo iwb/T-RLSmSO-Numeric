@@ -28,11 +28,11 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
 	%% Adjust timestamps
 	% Sensorpunkte in einen passenden Abstand setzen
     kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);       
-    lookAhead = 6 * kappa / (speedArray.^2); % [s]
+    lookAhead = 6 * kappa ./ (speedArray.^2); % [s]
     
         
 	tArray = tArray + lookAhead;
-	pArray = pArray + lookAhead .* 2*pi*config.sim.Frequency;
+	pArray = pArray + lookAhead .* 2*pi*config.osz.Frequency;
 
 	Sensor_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]

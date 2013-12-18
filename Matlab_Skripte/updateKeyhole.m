@@ -99,7 +99,7 @@ model.selection('FM_Domain').name('Fine_Meshed_Domain');
 if (maxTag == 0)
     model.selection.create('KH_Bounds', 'Explicit');   
     model.selection('KH_Bounds').geom('geom1', 2); 
-    model.selection('KH_Bounds').set(10:209);
+    model.selection('KH_Bounds').set(10:142);
     %model.selection.create('KH_Bounds', 'Adjacent');
     %model.selection('KH_Bounds').set('input', conetags);
     model.selection('KH_Bounds').name('Keyhole_Bounds');

@@ -6,6 +6,10 @@ addpath('../Keyhole');
 addpath('./debugging');
 
 config = initConfig;
+config.osz.Amplitude = 0.55e-3;
+config.osz.Frequency = 2000;
+config.osz.Power = 3000;
+
 
 output_path = '../Ergebnisse/';
 
@@ -69,7 +73,11 @@ if (config.sim.savePool)
 end
 
 %% Zeit- und Ortsschritte festlegen
-[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x] = createLinearTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x] = createTrajectory(config);
+
+kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+Pe = config.las.WaistSize / kappa * speedArray(1);
+fprintf('Pe: %.1f\n', Pe);
 
 save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
