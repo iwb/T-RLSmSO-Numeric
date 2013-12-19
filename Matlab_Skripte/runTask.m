@@ -73,7 +73,7 @@ if (config.sim.savePool)
 end
 
 %% Zeit- und Ortsschritte festlegen
-[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x] = createTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, ~] = createTrajectory(config);
 
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 Pe = config.las.WaistSize / kappa * speedArray(1);
@@ -120,8 +120,9 @@ model.study('std1').feature('time').activate('ht', true);
 model.param.set('Lx', KH_x(1)); % [m]
 model.param.set('Ly', KH_y(1)); % [m]
 model.param.set('phi', sprintf('%.12e [rad]', phiArray(1)));
-model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(1)));
-model.param.set('Cyl_r', sprintf('%.12e [m]', (config.osz.Amplitude + config.las.WaistSize) * 1.5));
+
+%ROI Radius festlegen 
+model.param.set('Cyl_r', sprintf('%.12e [m]', config.las.WaistSize * 3));
 
 %% Geometrie erzeugen
 model.geom('geom1').feature('fin').set('repairtol', '1.0E-5');
@@ -139,10 +140,10 @@ geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.Sample
 cone = geometry.feature.create('roicone', 'ECone');
 cone.set('axis', [0, 0, -1]);
 cone.set('semiaxes', {'Cyl_r', 'Cyl_r'});
-cone.set('pos', {'Cyl_x' '0' '0'});
+cone.set('pos', {'Lx' 'Ly' '0'});
 cone.set('h', 'Cyl_h');
 cone.set('displ', [0, 0]);
-cone.set('rat', 0.5);
+cone.set('rat', 0.8);
 cone.set('rot', 0);
 
 %% Keyhole berechnen und in die Geometrie einfügen
@@ -328,7 +329,7 @@ for i=2 : iterations
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
-	model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
+	%model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
 	
 	fprintf('Calculating KH ...\n');
 	keyholestart = tic;	

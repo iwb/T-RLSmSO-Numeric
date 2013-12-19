@@ -10,9 +10,9 @@ model.mesh('mesh1').feature('ftet1').selection.named('FM_Domain');
 
 model.mesh('mesh1').feature('ftet1').feature('size1').set('custom', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hmaxactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '15 [µm]');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '12 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hminactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hmin', '6 [µm]');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hmin', '5 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hgradactive', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hgrad', '1.12');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hcurveactive', 'on');
@@ -24,11 +24,12 @@ model.mesh('mesh1').feature('ftet1').feature('size1').set('hnarrow', '0.3');
 model.mesh('mesh1').feature.create('ftet2', 'FreeTet');
 model.mesh('mesh1').feature('size').set('custom', 'on');
 model.mesh('mesh1').feature('size').set('hmax', '1.1 [mm]');
-model.mesh('mesh1').feature('size').set('hmin', '20 [µm]');
+model.mesh('mesh1').feature('size').set('hmin', '12 [µm]');
 model.mesh('mesh1').feature('size').set('hgrad', '1.3'); % Maximale Wachstumsrate
 model.mesh('mesh1').feature('size').set('hcurve', '0.4'); % Kurvenradius, kleiner = feiner
 model.mesh('mesh1').feature('size').set('hnarrow', '0.7'); % Auflösung schmaler Regionen. größer = feiner
 
+%%
 model.mesh('mesh1').run;
 end
 

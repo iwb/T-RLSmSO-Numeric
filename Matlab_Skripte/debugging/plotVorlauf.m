@@ -3,7 +3,6 @@ if(true)
     x_r = 1e-4;
     
     apex_pos = KH_x(i-1) + khg(2, 1) + khg(3, 1);
-    fit_factor = 1.0;
     clear SensorCoords;
     clear distance;
     SensorCoords(1, :) = linspace(apex_pos, apex_pos + x_r, 100);
@@ -16,14 +15,14 @@ if(true)
         stemp = SensorTemps(ii);
         distance(ii) = SensorCoords(1, ii) - apex_pos;
         kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
-        eta = -fit_factor*speedArray(i-1) / kappa;
+        eta = -speedArray(i-1) / kappa;
         mattemp(ii) = (stemp - config.mat.VaporTemperature * exp(eta*distance(ii))) / ...
             (1 - exp(eta*distance(ii)));
     end
     
     Pe = config.las.WaistSize / kappa * config.osz.FeedVelocity;
     
-    predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-distance*fit_factor * speedArray(i-1)/kappa);
+    predicted = config.mat.AmbientTemperature + (config.mat.VaporTemperature - config.mat.AmbientTemperature) * exp(-distance * speedArray(i-1)/kappa);
     
     %figure;
     plot(distance, SensorTemps); hold all;

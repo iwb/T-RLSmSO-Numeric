@@ -70,10 +70,13 @@ fprintf('Keyhole was build out of %d elements, %4.0fµm deep.\n', i, -depth * 1e6
 Cyl_height = min(config.dis.SampleThickness, -depth * 1.5);
 model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
 
+kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
+heat_penetration_length = kappa/speedArray(1); % [m]
+
 prevR = sscanf(char(model.param.get('Cyl_r')), '%f [m]');
-maxR1 = RadiusArray(1) - CenterArray(1) + config.osz.Amplitude;
-maxR2 = RadiusArray(i+1) - CenterArray(i+1) + config.osz.Amplitude;
-newR = max([prevR, 2 * maxR1, 3 * maxR2]);
+maxR1 = RadiusArray(1) - CenterArray(1) + 6*heat_penetration_length;
+maxR2 = RadiusArray(i+1) - CenterArray(i+1) + 6*heat_penetration_length;
+newR = max([prevR, 1.2 * maxR1, 1.2 * maxR2]);
 model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
