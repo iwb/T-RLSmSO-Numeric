@@ -288,6 +288,10 @@ if (config.sim.saveVideo)
 	[imind,cm] = rgb2ind(im, 256);
 	imwrite(imind, cm, gifPath, 'gif', 'Loopcount', inf);
 end
+    
+if (config.sim.savePictures)
+    saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
+end
 
 %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
 clear getnextSolver;
