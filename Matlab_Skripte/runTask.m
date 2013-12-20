@@ -52,7 +52,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 200e-6; % [m]
+	resolution = 10e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
@@ -153,7 +153,7 @@ keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
 
 %% Material zuweisen
-initMaterial(model, config);
+initMaterial_sysweld(model, config);
 
 %% Randbedingungen setzen
 
@@ -293,6 +293,8 @@ if (config.sim.savePictures)
     saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
 end
 
+SensorTempHist = zeros(3,5,iterations);
+
 %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
 clear getnextSolver;
 
@@ -320,24 +322,23 @@ for i=2 : iterations
 	Solver = getNextSolver(model, Solver, dt(i));
 	
 	%% Temperatur an der Stelle des nächsten KH messen
-% 	SensorCoords(3, :) = linspace(0, KH_depth, 5);
-% 	SensorCoords(1, :) = Sensor_x(i);
-% 	SensorCoords(2, :) = Sensor_y(i);
-% 	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
- 	
+	SensorCoords(3, :) = linspace(0, KH_depth, 5);
+	SensorCoords(1, :) = Sensor_x(i);
+	SensorCoords(2, :) = Sensor_y(i);
+	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+    
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
 	model.param.set('Ly', KH_y(i));
 	model.param.set('phi', sprintf('%.12e [rad]', phiArray(i)));
-	%model.param.set('Cyl_x', sprintf('%.12e [m]', Cyl_x(i)));
 	
 	fprintf('Calculating KH ...\n');
 	keyholestart = tic;	
     
-    if (true)
+    if (false)
         plotVorlauf
     end
-    
+    SensorTempHist(:,:,i) = SensorTemps;
 	% mean(SensorTemps)
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
@@ -415,11 +416,11 @@ for i=2 : iterations
 	end
 	
 	%% GIF Animation erzeugen
-	if (config.sim.saveVideo)
-		frame = getframe(gcf);
-		im = frame2im(frame);
-		[imind,cm] = rgb2ind(im,256);
-		imwrite(imind, cm, gifPath, 'gif', 'WriteMode', 'append');
+    if (config.sim.saveVideo)
+        frame = getframe(gcf);
+        im = frame2im(frame);
+        [imind,cm] = rgb2ind(im,256);
+        imwrite(imind, cm, gifPath, 'gif', 'WriteMode', 'append');
     end
     
     if (config.sim.savePictures)
@@ -457,8 +458,8 @@ fprintf(progress_msg);
 tweet(progress_msg);
 
 %% Eingebrachte Leistung in jeder Iteration berechnen
-addedEnergy = diff([0; energy]);
-iterpower = addedEnergy ./ dt(1:iterations)';
+addedEnergy = diff(energy);
+iterpower = addedEnergy ./ dt(2:iterations)';
 
 %% Daten speichern
 fprintf('Saving iteration times ... ');
