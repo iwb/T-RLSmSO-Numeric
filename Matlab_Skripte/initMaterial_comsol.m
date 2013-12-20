@@ -1,4 +1,4 @@
-function initMaterial_comsol( model )
+function initMaterial_comsol( model, ~ )
 
 	mat = model.material.create('mat1');
 	mat.name('Edelstahl (1.4301)');
