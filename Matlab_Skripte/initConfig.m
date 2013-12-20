@@ -42,14 +42,15 @@ function [ config ] = initConfig()
 	config.sim.PoolConvergenceThreshold = ...	% [-] Recommended: One oscillation
 		ceil(config.sim.TimeSteps / config.sim.Oscillations);	
 
-	config.sim.confirmMesh = true;
-	config.sim.saveSections = false;
-	config.sim.savePool = false;
+	config.sim.confirmMesh = false;
+	config.sim.saveSections = true;
+	config.sim.savePool = true;
 	config.sim.saveFinalTemps = true;
 	config.sim.saveMph = true;
 	config.sim.saveTimeStepMph = true;
-	config.sim.saveVideo = false;
-	config.sim.showPlot = false;
+	config.sim.saveVideo = true;
+    config.sim.savePictures = true;
+	config.sim.showPlot = true;
 	config.sim.showComsolProgress = true;
 end
 

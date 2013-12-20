@@ -12,8 +12,9 @@ output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
-sectionPath = [output_path 'Section_%02d.mat'];
-timeStepMphPath = [output_path 'Model_%02d.mph'];
+figurePath = [output_path 'Figure_%002.png'];
+sectionPath = [output_path 'Section_%002d.mat'];
+timeStepMphPath = [output_path 'Model_%002d.mph'];
 poolPath = [output_path 'Pool.mat'];
 timesPath = [output_path 'Iteration_Times.mat'];
 workspacePath = [output_path 'workspace.mat'];
@@ -415,7 +416,11 @@ for i=2 : iterations
 		im = frame2im(frame);
 		[imind,cm] = rgb2ind(im,256);
 		imwrite(imind, cm, gifPath, 'gif', 'WriteMode', 'append');
-	end
+    end
+    
+    if (config.sim.savePictures)
+        saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
+    end
 	
 	%% Fortschritt anzeigen
     thistime = toc(iterstart);
