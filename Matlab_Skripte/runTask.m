@@ -81,7 +81,7 @@ save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 50; %config.sim.TimeSteps;
+iterations = 35; %config.sim.TimeSteps;
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -516,11 +516,11 @@ tweet(progress_msg);
 
 diary off
 %% Auf der Workstation die COMSOL-Lizenz freigeben
-if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4'))
+if (strcmp(getenv('COMPUTERNAME'), 'WAP09CELSIUS4') && config.sim.closeComsol)
 	exit
 end
 
-if (strcmp(getenv('COMPUTERNAME'), 'POONS'))
+if (strcmp(getenv('COMPUTERNAME'), 'POONS') && config.sim.closeComsol)
 	exit
 end
 
