@@ -293,7 +293,7 @@ if (config.sim.savePictures)
     saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
 end
 
-SensorTempHist = zeros(3,5,iterations);
+SensorTempHist = zeros(iterations,5);
 
 %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
 clear getnextSolver;
@@ -338,7 +338,7 @@ for i=2 : iterations
     if (false)
         plotVorlauf
     end
-    SensorTempHist(:,:,i) = SensorTemps;
+    SensorTempHist(i, :) = SensorTemps;
 	% mean(SensorTemps)
 	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
