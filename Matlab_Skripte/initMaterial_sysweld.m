@@ -9,21 +9,24 @@ function initMaterial_sysweld( model )
 	mat.propertyGroup('def').set('heatcapacity', 'C(T[1/K])[J/(kg*K)]');
 	
 	
-	model.material('mat1').propertyGroup('def').func.create('k', 'Piecewise');
-	model.material('mat1').propertyGroup('def').func('k').set('funcname', 'k');
-	model.material('mat1').propertyGroup('def').func('k').set('arg', 'T');
-	model.material('mat1').propertyGroup('def').func('k').set('extrap', 'constant');
-	model.material('mat1').propertyGroup('def').func('k').set('pieces', {'45' '293' '-0.2242957 + 0.7605684*T^1 + -0.04007508*T^2 + 0.002181761*T^3 + -1.836024E-5*T^4';'293' '1200' '8.926275 + -2.900987*T^1 + 0.1470793*T^2 + -0.001254897*T^3 + 3.414011E-6*T^4'});
 	
-	model.material('mat1').propertyGroup('def').func.create('rho', 'Piecewise');
-	model.material('mat1').propertyGroup('def').func('rho').set('funcname', 'rho');
-	model.material('mat1').propertyGroup('def').func('rho').set('arg', 'T');
-	model.material('mat1').propertyGroup('def').func('rho').set('extrap', 'constant');
-	model.material('mat1').propertyGroup('def').func('rho').set('pieces', {'93' '1700' '-0.2242957 + 0.7605684*T^1 + -0.04007508*T^2 + 0.002181761*T^3 + -1.836024E-5*T^4'});
+	func = model.material('mat1').propertyGroup('def').func.create('k', 'Interpolation');
+	func.set('funcname', 'k');
+	func.set('extrap', 'constant');
+	func.set('interp', 'linear');
+	func.set('table',  {'273.15' '16'; '673.15' '20.5'; '1633.15' '32.4'; '2773.15'  '32.4'});
+		
+	func = model.material('mat1').propertyGroup('def').func.create('rho', 'Interpolation');
+	func.set('funcname', 'rho');
+	func.set('extrap', 'constant');
+	func.set('interp', 'cubicspline');
+	func.set('table',  {'273.15' '7912'; '473.15' '7840'; '673.15' '7752'; '1073.15' '7560'; '1273.15' '7456'; '1473.15' '7352'; '1873.15' '7140'});
 	
-	model.material('mat1').propertyGroup('def').func.create('C', 'Piecewise');
-	model.material('mat1').propertyGroup('def').func('C').set('funcname', 'C');
-	model.material('mat1').propertyGroup('def').func('C').set('arg', 'T');
-	model.material('mat1').propertyGroup('def').func('C').set('extrap', 'constant');
-	model.material('mat1').propertyGroup('def').func('C').set('pieces', {'128' '310' '270.215 + -1.210511*T^1 + 0.02151566*T^2 + -7.511841E-5*T^3 + 8.136796E-8*T^4';'310' '1311' '109.2073 + 2.571775*T^1 + -0.006528099*T^2 + 7.787524E-6*T^3 + -4.167913E-9*T^4 + 8.090613E-13*T^5'});
+	
+	
+	func = model.material('mat1').propertyGroup('def').func.create('C', 'Interpolation');
+	func.set('funcname', 'C');
+	func.set('extrap', 'constant');
+	func.set('interp', 'linear');	
+	func.set('table',  {'273.15' '511'; '473.15' '542'; '673.15' '575'; '873.15' '605'; '1073.2' '630'; '1273.2' '655'; '1473.2' '670'; '1623.2' '685'; '2773.2' '730'});
 end
