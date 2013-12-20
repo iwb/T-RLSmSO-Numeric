@@ -6,9 +6,6 @@ addpath('../Keyhole');
 addpath('./debugging');
 
 config = initConfig;
-config.osz.Amplitude = 0.55e-3;
-config.osz.Frequency = 2000;
-config.osz.Power = 3000;
 
 
 output_path = '../Ergebnisse/';
@@ -130,13 +127,9 @@ model.geom('geom1').feature('fin').set('repairtol', '1.0E-5');
 geometry.feature.create('blk1', 'Block');
 geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
 geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
+geometry.feature('blk1').set('createselection', 'on');
 
-% Fein gemeshter Zylinder
-% model.geom('geom1').feature.create('cyl1', 'Cylinder');
-% model.geom('geom1').feature('cyl1').set('pos', {'Cyl_x' '0' '-Cyl_h'});
-% model.geom('geom1').feature('cyl1').set('h', 'Cyl_h');
-% model.geom('geom1').feature('cyl1').set('r', 'Cyl_r');
-
+% Fein gemeshter Konus
 cone = geometry.feature.create('roicone', 'ECone');
 cone.set('axis', [0, 0, -1]);
 cone.set('semiaxes', {'Cyl_r', 'Cyl_r'});
@@ -145,6 +138,8 @@ cone.set('h', 'Cyl_h');
 cone.set('displ', [0, 0]);
 cone.set('rat', 0.8);
 cone.set('rot', 0);
+cone.set('createselection', 'on');
+
 
 %% Keyhole berechnen und in die Geometrie einfügen
 fprintf('Calculating KH ...\n');
@@ -163,11 +158,11 @@ initMaterial(model, config);
 
 model.physics('ht').feature('init1').set('T', 1, sprintf('%d[K]', config.mat.AmbientTemperature));
 
-% Keyhole Innenraum
-model.physics('ht').feature.create('init2', 'init', 3);
-model.physics('ht').feature('init2').selection.named('KH_Domain');
-model.physics('ht').feature('init2').set('T', 1, config.mat.VaporTemperature);
-model.physics('ht').feature('init2').name('KH_Temp');
+% Keyhole Innenraum wird ausgeschnitten
+% model.physics('ht').feature.create('init2', 'init', 3);
+% model.physics('ht').feature('init2').selection.named('KH_Domain');
+% model.physics('ht').feature('init2').set('T', 1, config.mat.VaporTemperature);
+% model.physics('ht').feature('init2').name('KH_Temp');
 % Keyhole-Rand
 model.physics('ht').feature.create('temp1', 'TemperatureBoundary', 2);
 model.physics('ht').feature('temp1').selection.named('KH_Bounds');

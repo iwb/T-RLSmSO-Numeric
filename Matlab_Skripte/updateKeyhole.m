@@ -71,7 +71,7 @@ Cyl_height = min(config.dis.SampleThickness, -depth * 1.5);
 model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
 
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
-heat_penetration_length = kappa/speedArray(1); % [m]
+heat_penetration_length = kappa/speed; % [m]
 
 prevR = sscanf(char(model.param.get('Cyl_r')), '%f [m]');
 maxR1 = RadiusArray(1) - CenterArray(1) + 6*heat_penetration_length;
@@ -88,23 +88,17 @@ model.geom('geom1').feature('dif1').selection('input2').set(conetags);
 geometry.run; % Damit die Selektion funktioniert...
 
 if (maxTag == 0)
-    model.selection.create('KH_Domain', 'Explicit');
     model.selection.create('FM_Domain', 'Explicit');
 end
 
-%model.selection('KH_Domain').set(3:i+2);
-%model.selection('KH_Domain').name('Keyhole_Domain');
-
-% Include the cylinder in the fine mesh
+% Include the ROI cone in the fine mesh
 model.selection('FM_Domain').set(2);
 model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
 if (maxTag == 0)
-    model.selection.create('KH_Bounds', 'Explicit');   
-    model.selection('KH_Bounds').geom('geom1', 2); 
-    model.selection('KH_Bounds').set(10:142);
-    %model.selection.create('KH_Bounds', 'Adjacent');
-    %model.selection('KH_Bounds').set('input', conetags);
+    model.selection.create('KH_Bounds', 'Complement');
+    model.selection('KH_Bounds').set('entitydim', '2');    
+    model.selection('KH_Bounds').set('input', {'geom1_blk1_bnd' 'geom1_roicone_bnd'});    
     model.selection('KH_Bounds').name('Keyhole_Bounds');
 end
 
