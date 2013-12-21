@@ -14,7 +14,7 @@ function [meshtime,stats] =  updateMesh( model )
 	model.mesh('mesh1').run;
     
     meshtime = toc(meshstart);
-	fprintf('done. (%0.1f sec)\n', meshtime(i));
+	fprintf('done. (%0.1f sec)\n', meshtime);
 	
 	stats = mphmeshstats(model);
 	fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));

@@ -81,8 +81,10 @@ model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
 
-model.geom('geom1').feature.create('dif1', 'Difference');
-model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
+if (maxTag == 0)
+    model.geom('geom1').feature.create('dif1', 'Difference');
+    model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
+end
 model.geom('geom1').feature('dif1').selection('input2').set(conetags);
 
 geometry.run; % Damit die Selektion funktioniert...
