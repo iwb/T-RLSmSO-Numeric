@@ -174,7 +174,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_fine(model);
+createMesh_28(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -320,23 +320,18 @@ for i=2 : iterations
 	%% Zweiten Solver erzeugen
 	Solver = getNextSolver(model, Solver, dt(i));
 	
-	%% Temperatur an der Stelle des nächsten KH messen
-	SensorCoords(1) = Sensor_x(i);
-	SensorCoords(2) = Sensor_y(i);
-	SensorCoords(3) = 0;
-	SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-    
     %% Virtuelle Umgebungstemperatur errechnen
     Pe = config.las.WaistSize / kappa * speedArray(i);
     kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);    
            
     KH_pos = [KH_x(i) ; KH_y(i)];
     lookAhead = khg(3, 1) +  1 * kappa ./ speedArray(i); % [m]
-    SensorPoint = KH_pos + lookAhead * [cos(phiArray(i)); sin(phiArray(i))];
-    
+    SensorPoint = KH_pos + lookAhead * [cos(phiArray(i)); sin(phiArray(i))];    
     distance = sqrt(sum((SensorPoint - KH_pos).^2));
+    
+	SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', [SensorPoint; 0], 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+    
     T_inf = calcTinfty(SensorTemp, khg, Pe, config, distance);
-    fprintf('Equivalent Ambient Temp: %.1f\n', T_inf);
     
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));

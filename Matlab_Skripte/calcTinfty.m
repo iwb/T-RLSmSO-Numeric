@@ -5,10 +5,11 @@ function [ Tinfty ] = calcTinfty(Ta, khg, Pe, config, distance)
     T_norm = calcTemp(khg, Pe, config, 0, distance);
 
     Tinfty = (Ta - T_norm * config.mat.VaporTemperature) / (1 - T_norm);
+    fprintf('Equivalent Ambient Temp: %.1f\n', Tinfty);
     Tinfty = max(Tinfty, config.mat.AmbientTemperature);
 end
 
-function calcTemp(khg, Pe, config, z_depth, x_offsets)
+function TField = calcTemp(khg, Pe, config, z_depth, x_offsets)
     Center = interp1(khg(1,:), khg(2,:), z_depth);
     Radius = interp1(khg(1,:), khg(3,:), z_depth);
 
