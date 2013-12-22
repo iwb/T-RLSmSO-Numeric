@@ -1,5 +1,3 @@
-%function runTask(config)
-
 clc;
 diary off;
 addpath('../Keyhole');
@@ -11,7 +9,7 @@ output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
-figurePath = [output_path 'Figure_%03.png'];
+figurePath = [output_path 'Figure_%03d.png'];
 sectionPath = [output_path 'Section_%03d.mat'];
 timeStepMphPath = [output_path 'Model_%03d.mph'];
 poolPath = [output_path 'Pool.mat'];
@@ -39,8 +37,8 @@ import com.comsol.model.util.*
 if (config.sim.saveSections)
 	resolution = 10e-6; % [m]
 	range_x = single(0 : resolution : config.dis.SampleLength);
-	range_y = single(linspace(-2e-4, 2e-4, 9));
-	range_z = single(0 : -resolution : -1.5e-3);
+	range_y = single(linspace(-4e-4, 4e-4, 9));
+	range_z = single(0 : -resolution : -1.2e-3);
 	
 	[XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
 	sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -53,7 +51,7 @@ end
 if (config.sim.savePool)
 	resolution = 10e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
-	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
+	range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
 	
 	[YY, XX, ZZ] = meshgrid(range_y, range_x, range_z);
@@ -80,7 +78,7 @@ save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 12; %config.sim.TimeSteps;
+iterations = config.sim.TimeSteps;
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -98,8 +96,7 @@ ModelUtil.remove('Model');
 ModelUtil.showProgress(false);
 
 model = ModelUtil.create('Model');
-%model.modelPath('C:/Daten/Julius_FEM/Matlab_3D');
-model.name('Final_Model.mph');
+model.name('MATLAB_Model.mph');
 
 model.modelNode.create('mod1');
 
@@ -472,7 +469,7 @@ flushDiary(logPath);
 if (config.sim.saveMph)
 	fprintf('Saving mph file ... ');
 	flushDiary(logPath);
-	mphsave(model, [output_path char(model.name)]);
+	mphsave(model, [output_path 'Final_Model.mph']);
 	fprintf('done.\n');
 	flushDiary(logPath);
 end
@@ -525,5 +522,3 @@ end
 if (strcmp(getenv('COMPUTERNAME'), 'POONS') && config.sim.closeComsol)
 	exit
 end
-
-%end
