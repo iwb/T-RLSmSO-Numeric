@@ -1,4 +1,4 @@
-function depth = updateKeyhole(model, geometry, speed, temp, config)
+function depth = updateKeyhole(model, speed, temp, config)
 %UPDATEKEYHOLE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -17,6 +17,8 @@ persistent maxTag;
 
 if isempty(maxTag)
 	maxTag = 0;
+else
+    model.geom('geom1').feature.remove('dif1');
 end
 
 for i = 1:size(CenterArray, 2)-1
@@ -39,9 +41,9 @@ for i = 1:size(CenterArray, 2)-1
 	
 	% Maybe there is already a cone there, we just need to update...
 	if (i > maxTag)
-		cone = geometry.feature.create(['econ_' num2str(i)], 'ECone');
+		cone = model.geom('geom1').feature.create(['econ_' num2str(i)], 'ECone');
 	else
-		cone = geometry.feature(['econ_' num2str(i)]);
+		cone = model.geom('geom1').feature(['econ_' num2str(i)]);
 	end
 	conetags{end+1} = ['econ_' num2str(i)];
     
@@ -81,23 +83,20 @@ model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
 
-if (maxTag == 0)
-    model.geom('geom1').feature.create('dif1', 'Difference');
-    model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
-end
+model.geom('geom1').run(conetags{end});
+
+model.geom('geom1').feature.create('dif1', 'Difference');
+model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
 model.geom('geom1').feature('dif1').selection('input2').set(conetags);
 
-geometry.run; % Damit die Selektion funktioniert...
+model.geom('geom1').run; % Damit die Selektion funktioniert...
 
 if (maxTag == 0)
     model.selection.create('FM_Domain', 'Explicit');
-end
+    % Include the ROI cone in the fine mesh
+    model.selection('FM_Domain').set(2);
+    model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
-% Include the ROI cone in the fine mesh
-model.selection('FM_Domain').set(2);
-model.selection('FM_Domain').name('Fine_Meshed_Domain');
-
-if (maxTag == 0)
     model.selection.create('KH_Bounds', 'Complement');
     model.selection('KH_Bounds').set('entitydim', '2');    
     model.selection('KH_Bounds').set('input', {'geom1_blk1_bnd' 'geom1_roicone_bnd'});    

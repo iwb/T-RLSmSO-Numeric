@@ -12,9 +12,9 @@ output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
-figurePath = [output_path 'Figure_%002.png'];
-sectionPath = [output_path 'Section_%002d.mat'];
-timeStepMphPath = [output_path 'Model_%002d.mph'];
+figurePath = [output_path 'Figure_%03.png'];
+sectionPath = [output_path 'Section_%03d.mat'];
+timeStepMphPath = [output_path 'Model_%03d.mph'];
 poolPath = [output_path 'Pool.mat'];
 timesPath = [output_path 'Iteration_Times.mat'];
 workspacePath = [output_path 'workspace.mat'];
@@ -52,7 +52,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 10e-6; % [m]
+	resolution = 100e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
@@ -81,7 +81,7 @@ save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = 35; %config.sim.TimeSteps;
+iterations = 12; %config.sim.TimeSteps;
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -104,8 +104,8 @@ model.name('Final_Model.mph');
 
 model.modelNode.create('mod1');
 
-geometry = model.geom.create('geom1', 3);
-geometry.lengthUnit('m');
+model.geom.create('geom1', 3);
+model.geom('geom1').lengthUnit('m');
 
 model.mesh.create('mesh1', 'geom1');
 model.physics.create('ht', 'HeatTransfer', 'geom1');
@@ -124,14 +124,15 @@ model.param.set('Cyl_r', sprintf('%.12e [m]', config.las.WaistSize * 3));
 
 %% Geometrie erzeugen
 model.geom('geom1').feature('fin').set('repairtol', '1.0E-5');
+model.geom('geom1').autoRebuild('off');
 % Blech
-geometry.feature.create('blk1', 'Block');
-geometry.feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
-geometry.feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
-geometry.feature('blk1').set('createselection', 'on');
+model.geom('geom1').feature.create('blk1', 'Block');
+model.geom('geom1').feature('blk1').set('pos', [0, -config.dis.SampleWidth/2, -config.dis.SampleThickness]);
+model.geom('geom1').feature('blk1').set('size', [config.dis.SampleLength, config.dis.SampleWidth, config.dis.SampleThickness]);
+model.geom('geom1').feature('blk1').set('createselection', 'on');
 
 % Fein gemeshter Konus
-cone = geometry.feature.create('roicone', 'ECone');
+cone = model.geom('geom1').feature.create('roicone', 'ECone');
 cone.set('axis', [0, 0, -1]);
 cone.set('semiaxes', {'Cyl_r', 'Cyl_r'});
 cone.set('pos', {'Lx' 'Ly' '0'});
@@ -140,6 +141,7 @@ cone.set('displ', [0, 0]);
 cone.set('rat', 0.8);
 cone.set('rot', 0);
 cone.set('createselection', 'on');
+clear cone;
 
 
 %% Keyhole berechnen und in die Geometrie einfügen
@@ -147,7 +149,7 @@ fprintf('Calculating KH ...\n');
 keyholestart = tic;
 
 clear updateKeyhole;
-KH_depth = createKeyhole(model, geometry, speedArray(1), config);
+KH_depth = createKeyhole(model, speedArray(1), config);
 
 keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
@@ -175,7 +177,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_fine(model);
+createMesh_28(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -340,7 +342,7 @@ for i=2 : iterations
     end
     SensorTempHist(i, :) = SensorTemps;
 	% mean(SensorTemps)
-	KH_depth = updateKeyhole(model, geometry, speedArray(i), config.mat.AmbientTemperature, config);
+	KH_depth = updateKeyhole(model, speedArray(i), config.mat.AmbientTemperature, config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	
@@ -367,7 +369,7 @@ for i=2 : iterations
     
     model.result.numerical('int1').set('data', ['dset' num2str(i)]);
     % Workaround
-    model.result.numerical('int1').selection.named('KH_Domain');
+    model.result.numerical('int1').selection.set([]);
     model.result.numerical('int1').selection.all;
     energy(i) = model.result.numerical('int1').getReal();
 	
@@ -508,7 +510,7 @@ end
 
 % Damit man den Workspace speichern kann, müssen die COMSOL-Objekte
 % gelöscht werden.
-clear geometry cone ans Solver model;
+clear ans Solver model;
 save(workspacePath);
 
 progress_msg = sprintf('\nWorkspace saved, calculation finished.\n');
