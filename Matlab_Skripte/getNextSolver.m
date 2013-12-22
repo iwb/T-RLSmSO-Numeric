@@ -73,8 +73,10 @@ function [ New_Solver ] = getNextSolver(model, Old_Solver, dt, varargin)
     model.study('std1').feature('time').set('tlist', dt);
 
     % Alte Solver löschen
-    if SolverIndex > 2
-        model.sol.remove(['sol_' num2str(SolverIndex - 2)]);
+    if SolverIndex > 3
+        % Speicher sparen
+        old_dset = ['dset' num2str(SolverIndex - 3)];
+        model.result.dataset.remove(old_dset);
     end
 end
 

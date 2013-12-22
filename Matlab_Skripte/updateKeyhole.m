@@ -19,7 +19,13 @@ if isempty(maxTag)
 	maxTag = 0;
 else
     model.geom('geom1').feature.remove('dif1');
+    
+    % Remove cones
+    for j = maxTag : -1 : 1
+        model.geom('geom1').feature.remove(['econ_' num2str(j)]);
+    end
 end
+
 
 for i = 1:size(CenterArray, 2)-1
 	% This loops over every gap between two circles. Therefore, the top
@@ -34,18 +40,14 @@ for i = 1:size(CenterArray, 2)-1
     r = RadiusArray(i);
 	height = HeightArray(i);
 	
-	if (height/r > 10) % Bad condition
+	if (height/r > 12) % Bad condition
 		i = i - 1; %#ok<FXSET> b/c we break immediately afterwards
 		break;
-	end
-	
-	% Maybe there is already a cone there, we just need to update...
-	if (i > maxTag)
-		cone = model.geom('geom1').feature.create(['econ_' num2str(i)], 'ECone');
-	else
-		cone = model.geom('geom1').feature(['econ_' num2str(i)]);
-	end
-	conetags{end+1} = ['econ_' num2str(i)];
+    end
+    new_tag = ['econ_' num2str(i)];
+	conetags{end+1} = new_tag; 
+    
+	cone = model.geom('geom1').feature.create(new_tag, 'ECone');
     
 	ratio = RatioArray(i);
 	height_str = sprintf('%.12e', height);
@@ -57,11 +59,6 @@ for i = 1:size(CenterArray, 2)-1
 	cone.set('displ', [-DisplacementArray(i), 0]);
 	cone.set('rat', ratio);
 	cone.set('rot', '-phi');
-end
-
-% Remove unused cones
-for j = i+1 : maxTag
-	model.geom('geom1').feature.remove(['econ_' num2str(j)]);
 end
 
 depth = khg(1, i+1);
@@ -84,8 +81,8 @@ model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 %% Geometrie finalisieren
 
 model.geom('geom1').run(conetags{end});
-
 model.geom('geom1').feature.create('dif1', 'Difference');
+model.geom('geom1').runPre('dif1');
 model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
 model.geom('geom1').feature('dif1').selection('input2').set(conetags);
 

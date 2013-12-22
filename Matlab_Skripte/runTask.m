@@ -7,7 +7,6 @@ addpath('./debugging');
 
 config = initConfig;
 
-
 output_path = '../Ergebnisse/';
 
 logPath = [output_path 'diary.log'];
@@ -25,7 +24,7 @@ end
 
 if exist(logPath, 'file')
 	inp = input('Old diary found. Overwrite? (y/n)  ', 's');
-	if inp ~= 'j' && inp ~= 'y'
+	if any(inp ~= 'j') && any(inp ~= 'y')
 		fprintf('Calculation canceled.\n');
 		return;
 	end
@@ -52,7 +51,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 100e-6; % [m]
+	resolution = 10e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/3 : resolution : config.dis.SampleWidth/3);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
@@ -177,7 +176,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_28(model);
+createMesh_fine(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
