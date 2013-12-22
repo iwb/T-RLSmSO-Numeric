@@ -2,6 +2,7 @@ clc;
 diary off;
 addpath('../Keyhole');
 addpath('./debugging');
+addpath('../PP_Zylinderquelle');
 
 config = initConfig;
 
@@ -68,7 +69,7 @@ if (config.sim.savePool)
 end
 
 %% Zeit- und Ortsschritte festlegen
-[KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, ~] = createTrajectory(config);
+[KH_x, KH_y, phiArray, speedArray, dt, ~] = createTrajectory(config);
 
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 Pe = config.las.WaistSize / kappa * speedArray(1);
@@ -320,10 +321,22 @@ for i=2 : iterations
 	Solver = getNextSolver(model, Solver, dt(i));
 	
 	%% Temperatur an der Stelle des nächsten KH messen
-	SensorCoords(3, :) = linspace(0, KH_depth, 5);
-	SensorCoords(1, :) = Sensor_x(i);
-	SensorCoords(2, :) = Sensor_y(i);
-	SensorTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+	SensorCoords(1) = Sensor_x(i);
+	SensorCoords(2) = Sensor_y(i);
+	SensorCoords(3) = 0;
+	SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+    
+    %% Virtuelle Umgebungstemperatur errechnen
+    Pe = config.las.WaistSize / kappa * speedArray(i);
+    kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);    
+           
+    KH_pos = [KH_x(i) ; KH_y(i)];
+    lookAhead = khg(3, 1) +  1 * kappa ./ speedArray(i); % [m]
+    SensorPoint = KH_pos + lookAhead * [cos(phiArray(i)); sin(phiArray(i))];
+    
+    distance = sqrt(sum((SensorPoint - KH_pos).^2));
+    T_inf = calcTinfty(SensorTemp, khg, Pe, config, distance);
+    fprintf('Equivalent Ambient Temp: %.1f\n', T_inf);
     
 	%% Geometrie updaten
 	model.param.set('Lx', KH_x(i));
@@ -336,15 +349,14 @@ for i=2 : iterations
     if (false)
         plotVorlauf
     end
-    SensorTempHist(i, :) = SensorTemps;
+    SensorTempHist(i, :) = SensorTemp;
 	% mean(SensorTemps)
-	KH_depth = updateKeyhole(model, speedArray(i), config.mat.AmbientTemperature, config);
+	KH_depth = updateKeyhole(model, speedArray(i), T_inf, config);
 	keyholetime(i) = toc(keyholestart);
 	fprintf('done. (%0.1f sec)\n', keyholetime(i));
 	
 	
 	%% Mesh updaten
-
 	[meshtime(i), stats] = updateMesh(model);
 	
 	%% Mesh plotten

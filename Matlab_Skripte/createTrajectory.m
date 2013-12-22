@@ -1,4 +1,4 @@
-function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = createTrajectory( config )
+function [ KH_x, KH_y, phiArray, speedArray, dt, Cyl_x ] = createTrajectory( config )
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -23,20 +23,6 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
 	% Koordinaten für den Mittelpunkt der Oszillation
 	Cyl_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray;
-
-
-	%% Adjust timestamps
-	% Sensorpunkte in einen passenden Abstand setzen
-    kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);       
-    lookAhead = 1 * kappa ./ (speedArray.^2); % [s]
-    
-        
-	tArray = tArray + lookAhead;
-	pArray = pArray + lookAhead .* 2*pi*config.osz.Frequency;
-
-	Sensor_x = config.dis.StartX + config.osz.Amplitude + ...
-		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
-	Sensor_y = config.osz.Amplitude * sin(pArray); % [m]
 end
 
 %% Quadratische Zeitschritte
