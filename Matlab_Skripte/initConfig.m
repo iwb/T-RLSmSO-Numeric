@@ -7,8 +7,8 @@ function [ config ] = initConfig()
 	config.las.WaveLength = 1064e-9;	% [m]
 	config.las.WaistSize = 25e-6;		% [m] (= minimum beam radius)
 
-	config.osz.Amplitude = 0.375e-3;		% [m]
-	config.osz.Frequency = 1100;			% [Hz]
+	config.osz.Amplitude = 0.2e-3;		% [m]
+	config.osz.Frequency = 200;			% [Hz]
 	config.osz.FeedVelocity = 0.108;	% [m/s]
 	config.osz.Power = 3000;    		% [W]
 	config.osz.Focus = 0;				% [m] above Surface
@@ -34,8 +34,9 @@ function [ config ] = initConfig()
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
 
-	config.sim.TimeSteps = 57;					% [-]
-	config.sim.Oscillations = 3.5;				% [-] X.5 recommended
+	config.sim.TimeStepsPerOsz = 20;			% [-]
+	config.sim.Oscillations = 2;				% [-] X.5 recommended
+	config.sim.TimeSteps = 1 + config.sim.TimeStepsPerOsz * config.sim.Oscillations;
 	
 	% Number of timesteps in which the projected pool needs to stay
 	% constant so that the simulation is considered finished.
