@@ -55,10 +55,6 @@ function [ New_Solver ] = getNextSolver(model, Old_Solver, dt, varargin)
     New_Solver.feature('t1').feature('fc1').set('maxiter', 5);
     New_Solver.feature('t1').feature.remove('fcDef');
     New_Solver.attach('std1');
-    New_Solver.feature('v1').set('control', 'user');
-    New_Solver.feature('v1').set('initmethod', 'sol');
-    New_Solver.feature('v1').set('initsol', 'sol_2');
-    New_Solver.feature('v1').set('solnum', 'last');
 
     New_Solver.feature('v1').set('control', 'user');
     New_Solver.feature('v1').set('initmethod', 'sol');
@@ -77,6 +73,7 @@ function [ New_Solver ] = getNextSolver(model, Old_Solver, dt, varargin)
         % Speicher sparen
         old_dset = ['dset' num2str(SolverIndex - 3)];
         model.result.dataset.remove(old_dset);
+        model.sol.remove(['sol_' num2str(SolverIndex - 2)]);
     end
 end
 
