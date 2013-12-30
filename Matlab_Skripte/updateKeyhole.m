@@ -75,7 +75,7 @@ heat_penetration_length = kappa/speed; % [m]
 prevR = sscanf(char(model.param.get('Cyl_r')), '%f [m]');
 maxR1 = RadiusArray(1) - CenterArray(1) + 6*heat_penetration_length;
 maxR2 = RadiusArray(i+1) - CenterArray(i+1) + 6*heat_penetration_length;
-newR = max([prevR, 1.2 * maxR1, 1.2 * maxR2]);
+newR = max([prevR, maxR1, maxR2]);
 model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren

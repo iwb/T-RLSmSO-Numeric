@@ -8,9 +8,9 @@ function [ config ] = initConfig()
 	config.las.WaistSize = 25e-6;		% [m] (= minimum beam radius)
 
 	config.osz.Amplitude = 0.2e-3;		% [m]
-	config.osz.Frequency = 200;			% [Hz]
+	config.osz.Frequency = 1100;			% [Hz]
 	config.osz.FeedVelocity = 0.108;	% [m/s]
-	config.osz.Power = 3000;    		% [W]
+	config.osz.Power = 1000;    		% [W]
 	config.osz.Focus = 0;				% [m] above Surface
 
 	config.dis.SampleWidth = 6e-3;		% [m]

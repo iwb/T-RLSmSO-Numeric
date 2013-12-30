@@ -50,7 +50,7 @@ end
 
 %% Koordinaten für den Pool
 if (config.sim.savePool)
-	resolution = 10e-6; % [m]
+	resolution = 20e-6; % [m]
 	range_x = (0 : resolution : config.dis.SampleLength);
 	range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
 	range_z = (0 : -resolution : -config.dis.SampleThickness);
