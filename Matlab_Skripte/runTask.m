@@ -73,7 +73,10 @@ end
 
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 Pe = config.las.WaistSize / kappa * speedArray(1);
-fprintf('Pe: %.1f\n', Pe);
+thermal_distance = kappa ./ speedArray(1);
+step_distance = sqrt(sum(([KH_x(2) ; KH_y(2)] - [KH_x(1) ; KH_y(1)]).^2));
+
+fprintf('Pe: %.1f, WEZ: %.1e, SW: %.1e\n', Pe, thermal_distance, step_distance);
 
 save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
