@@ -10,11 +10,11 @@ model.mesh('mesh1').feature('ftet1').selection.named('FM_Domain');
 
 model.mesh('mesh1').feature('ftet1').feature('size1').set('custom', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hmaxactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '12 [µm]');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hmax', '16 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hminactive', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hmin', '5 [µm]');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hgradactive', 'on');
-model.mesh('mesh1').feature('ftet1').feature('size1').set('hgrad', '1.12');
+model.mesh('mesh1').feature('ftet1').feature('size1').set('hgrad', '1.14');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hcurveactive', 'on');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hcurve', '0.15');
 model.mesh('mesh1').feature('ftet1').feature('size1').set('hnarrowactive', 'on');

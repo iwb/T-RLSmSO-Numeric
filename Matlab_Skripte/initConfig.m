@@ -16,7 +16,7 @@ function [ config ] = initConfig()
 	config.dis.SampleWidth = 6e-3;		% [m]
 	config.dis.SampleThickness = 2.5e-3;	% [m]
 	config.dis.SampleLength = 10e-3;	% [m]
-	config.dis.KeyholeResolution = 10;	% [µm]
+	config.dis.KeyholeResolution = 12;	% [µm]
 	config.dis.StartX = 2e-3;			% [m]
 	config.dis.MinimumElemSize = 28e-6;	% [m]
 	% A lower value gives a finer mesh along curved boundaries.
