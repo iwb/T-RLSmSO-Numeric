@@ -20,7 +20,7 @@ function [ config ] = initConfig()
 	config.dis.StartX = 2e-3;			% [m]
 
     % Use T-dependent material (will ignore some constants below)
-	config.mat.UseSysweld = false; 
+	config.mat.UseSysweld = true; 
 	config.mat.ThermalConductivity  = 33.63;   % Wärmeleitfähigkeit [W/(mK)]
 	config.mat.Density = 7033;                 % Dichte [kg/m³]
 	config.mat.HeatCapacity = 711.4;           % spezifische Wärmekapazität [J/(kgK)]

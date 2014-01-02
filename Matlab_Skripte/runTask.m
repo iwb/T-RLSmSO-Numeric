@@ -155,7 +155,7 @@ keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
 
 %% Material zuweisen
-initMaterial_sysweld(model, config);
+initMaterial(model, config);
 
 %% Randbedingungen setzen
 
