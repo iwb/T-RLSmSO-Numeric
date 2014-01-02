@@ -19,7 +19,7 @@ param.kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.
 
 param.scaled = struct();
 param.scaled.waveLength = config.las.WaveLength;
-param.scaled.fokus = config.osz.Focus;
+param.scaled.fokus = config.osz.Focus / config.las.WaistSize;
 param.scaled.Rl = pi * config.las.WaistSize / config.las.WaveLength;
 % Skalierter Vorschub
 param.scaled.Pe = param.w0/param.kappa * param.v;
