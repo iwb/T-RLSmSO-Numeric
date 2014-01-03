@@ -28,7 +28,4 @@ function solver = initSolver(model, dt)
 	solver.feature('t1').feature('fc1').set('maxiter', 5);
 	solver.feature('t1').feature.remove('fcDef');
 	solver.attach('std1');
-    
-    solver.feature('t1').set('solfile', 'off');
-    solver.feature('t1').set('tstepsbdf', 'strict');
 end
