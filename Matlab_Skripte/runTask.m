@@ -525,7 +525,8 @@ try
     tweet(progress_msg);
     
 catch msg
-    tweet('Error! Calculation canceled.');
+    tweet(['Error! Calculation canceled. '  msg.identifier]);
+	rethrow (msg);
 end
 
 diary off
