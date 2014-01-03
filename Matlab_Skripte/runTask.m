@@ -71,9 +71,10 @@ end
 %% Zeit- und Ortsschritte festlegen
 [KH_x, KH_y, phiArray, speedArray, dt, ~] = createTrajectory(config);
 
+meanSpeed = 2*pi * config.osz.Frequency * config.osz.Amplitude;
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
-Pe = config.las.WaistSize / kappa * speedArray(1);
-thermal_distance = kappa ./ speedArray(1);
+Pe = config.las.WaistSize / kappa * meanSpeed;
+thermal_distance = kappa ./ meanSpeed;
 step_distance = sqrt(sum(([KH_x(2) ; KH_y(2)] - [KH_x(1) ; KH_y(1)]).^2));
 
 fprintf('Pe: %.1f, WEZ: %.1e, SW: %.1e\n', Pe, thermal_distance, step_distance);
