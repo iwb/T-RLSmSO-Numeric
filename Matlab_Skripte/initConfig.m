@@ -10,7 +10,7 @@ function [ config ] = initConfig()
 	config.osz.Amplitude = 0.2e-3;		% [m]
 	config.osz.Frequency = 1100;			% [Hz]
 	config.osz.FeedVelocity = 0.108;	% [m/s]
-	config.osz.Power = 1000;    		% [W]
+	config.osz.Power = 2000;    		% [W]
 	config.osz.Focus = 0;				% [m] above Surface
 
 	config.dis.SampleWidth = 6e-3;		% [m]
