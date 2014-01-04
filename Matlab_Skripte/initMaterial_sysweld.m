@@ -13,7 +13,7 @@ function initMaterial_sysweld( model, ~ )
 	func = model.material('mat1').propertyGroup('def').func.create('k', 'Interpolation');
 	func.set('funcname', 'k');
 	func.set('extrap', 'const');
-	func.set('interp', 'linear');
+	func.set('interp', 'piecewisecubic');
 	func.set('table',  {'273.15' '16'; '673.15' '20.5'; '1633.15' '32.4'; '2773.15'  '32.4'});
 		
 	func = model.material('mat1').propertyGroup('def').func.create('rho', 'Interpolation');
@@ -27,6 +27,6 @@ function initMaterial_sysweld( model, ~ )
 	func = model.material('mat1').propertyGroup('def').func.create('C', 'Interpolation');
 	func.set('funcname', 'C');
 	func.set('extrap', 'const');
-	func.set('interp', 'linear');	
+	func.set('interp', 'piecewisecubic');	
 	func.set('table',  {'273.15' '511'; '473.15' '542'; '673.15' '575'; '873.15' '605'; '1073.2' '630'; '1273.2' '655'; '1473.2' '670'; '1623.2' '685'; '2773.2' '730'});
 end
