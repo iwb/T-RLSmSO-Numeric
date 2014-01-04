@@ -60,6 +60,8 @@ function [ New_Solver ] = getNextSolver(model, Old_Solver, dt, varargin)
     New_Solver.feature('v1').set('initmethod', 'sol');
     New_Solver.feature('v1').set('initsol', Old_Solver.tag);
     New_Solver.feature('v1').set('solnum', 'last');
+    New_Solver.feature('t1').set('solfile', 'off');
+    New_Solver.feature('t1').set('tstepsbdf', 'strict');
 
     model.result('pg').set('data', new_dset);
 
