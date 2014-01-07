@@ -20,7 +20,7 @@ function [ config ] = initConfig()
 	config.dis.StartX = 2e-3;			% [m]
     
     config.dis.TimeStepsPerOsz = 20;			% [-]
-	config.dis.Oscillations = 2;				% [-] X.5 recommended
+	config.dis.Oscillations = 2.5;				% [-] X.5 recommended
 	config.dis.TimeSteps = 1 + config.dis.TimeStepsPerOsz * config.dis.Oscillations;
 
     % Use T-dependent material (will ignore some constants below)
