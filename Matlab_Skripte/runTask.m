@@ -178,7 +178,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_fine(model);
+createMesh_62(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -197,9 +197,12 @@ end
 try
     allstart = tic;
     
-    %% Ersten Solver konfigurieren
-    model.study('std1').feature('time').set('tlist', dt(1));
-    Solver = initSolver(model, dt(1));
+    %% Ersten Solver konfigurieren	
+	model.study('std1').feature('time').set('tlist', dt(1));
+	model.study('std1').feature('time').set('rtol', '0.001');
+	model.study('std1').feature('time').set('rtolactive', true);
+
+    Solver = initSolverMultigrid(model, dt(1));
     
     %% Anzeige erstellen
     model.result.create('pg', 'PlotGroup3D');
