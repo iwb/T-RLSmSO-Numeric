@@ -4,21 +4,21 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Sensor_x, Sensor_y, Cyl_x ] = c
 
 	dist = 2e-3;
     
-%     ts = config.sim.TimeSteps;
+%     ts = config.dis.TimeSteps;
 %     dx_last = 3e-6;
 %     cc = [ts, -ts^2; 1, -2*ts] \ [dist; dx_last];
 %     KH_x = config.dis.StartX + cc(1) * (1:ts) - cc(2) * (1:ts).^2; % [mm]
 	
-	tArray = linspace(0, dist ./ config.osz.FeedVelocity, config.sim.TimeSteps); % = d/v * [t]
-	pArray =  linspace(0, dist, config.sim.TimeSteps); % = d * [t]
+	tArray = linspace(0, dist ./ config.osz.FeedVelocity, config.dis.TimeSteps); % = d/v * [t]
+	pArray =  linspace(0, dist, config.dis.TimeSteps); % = d * [t]
 	
-	KH_x = linspace(config.dis.StartX, config.dis.StartX + dist, config.sim.TimeSteps);
-	KH_y = zeros(1, config.sim.TimeSteps);
+	KH_x = linspace(config.dis.StartX, config.dis.StartX + dist, config.dis.TimeSteps);
+	KH_y = zeros(1, config.dis.TimeSteps);
     
-	phiArray = zeros(1, config.sim.TimeSteps);
-    speedArray = ones(1, config.sim.TimeSteps) .* config.osz.FeedVelocity;
+	phiArray = zeros(1, config.dis.TimeSteps);
+    speedArray = ones(1, config.dis.TimeSteps) .* config.osz.FeedVelocity;
 	
-	dt = ones(1, config.sim.TimeSteps) .* ( dist ./ config.osz.FeedVelocity / config.sim.TimeSteps);
+	dt = ones(1, config.dis.TimeSteps) .* ( dist ./ config.osz.FeedVelocity / config.dis.TimeSteps);
 		
 	% Koordinaten für den Mittelpunkt der Oszillation
 

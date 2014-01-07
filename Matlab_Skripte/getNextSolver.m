@@ -17,7 +17,6 @@ function [ New_Solver ] = getNextSolver(model, Old_Solver, dt, varargin)
         return;
     end
 
-    old_tag = ['sol_' num2str(SolverIndex - 1)];
     new_tag = ['sol_' num2str(SolverIndex)];
     new_dset = ['dset' num2str(SolverIndex)];
 

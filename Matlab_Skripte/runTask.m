@@ -83,7 +83,7 @@ save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren
-iterations = config.sim.TimeSteps;
+iterations = config.dis.TimeSteps;
 
 keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
@@ -102,6 +102,7 @@ ModelUtil.showProgress(false);
 
 model = ModelUtil.create('Model');
 model.name('MATLAB_Model.mph');
+model.author('Julius F. Heins');
 
 model.modelNode.create('mod1');
 
@@ -178,18 +179,18 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_62(model);
+createMesh_fine(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
 
 %% Mesh plotten
-stats = mphmeshstats(model);
+stats = mphmeshstats(model, 'mesh1');
 fprintf('The mesh consists of %d elements. (%d edges)\n', stats.numelem(2), stats.numelem(1));
 
 if (config.sim.confirmMesh)
     subplot(2, 1, 1);
-    mphmesh(model);
+    mphmesh(model, 'mesh1');
     drawnow;
     input('Generated Mesh. Enter to continue...');
 end
@@ -224,7 +225,7 @@ try
     fprintf('\nCurrent Time: %s\n', datestr(now));
     fprintf('\nStarting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
     
-    tweet(sprintf('Starting calculation (%2d/%2d timesteps, %3d elements)', iterations, config.sim.TimeSteps, stats.numelem(2)));
+    tweet(sprintf('Starting calculation (%2d/%2d timesteps, %3d elements)', iterations, config.dis.TimeSteps, stats.numelem(2)));
     
     %% Modell lösen
     fprintf('Solving model ... ');
@@ -304,6 +305,7 @@ try
     
     %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
     clear getnextSolver;
+    clear getnextSolverMultigrid;
     
     %% Flush diary
     flushDiary(logPath);
@@ -326,7 +328,7 @@ try
         fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*1e3);
         
         %% Zweiten Solver erzeugen
-        Solver = getNextSolver(model, Solver, dt(i));
+        Solver = getNextSolverMultigrid(model, Solver, dt(i));
         
         %% Virtuelle Umgebungstemperatur errechnen
         Pe = config.las.WaistSize / kappa * speedArray(i);
@@ -365,7 +367,7 @@ try
         %% Mesh plotten
         if (config.sim.showPlot)
             subplot(2, 1, 1);
-            mphmesh(model);
+            mphmesh(model, 'mesh1');
             drawnow;
         end
         

@@ -18,6 +18,10 @@ function [ config ] = initConfig()
 	config.dis.SampleLength = 10e-3;	% [m]
 	config.dis.KeyholeResolution = 12;	% [µm]
 	config.dis.StartX = 2e-3;			% [m]
+    
+    config.dis.TimeStepsPerOsz = 20;			% [-]
+	config.dis.Oscillations = 2;				% [-] X.5 recommended
+	config.dis.TimeSteps = 1 + config.dis.TimeStepsPerOsz * config.dis.Oscillations;
 
     % Use T-dependent material (will ignore some constants below)
 	config.mat.UseSysweld = true; 
@@ -29,19 +33,15 @@ function [ config ] = initConfig()
 	config.mat.MeltingTemperature = 1796;      % Schmelztemperatur [K]
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
-
-	config.sim.TimeStepsPerOsz = 20;			% [-]
-	config.sim.Oscillations = 2;				% [-] X.5 recommended
-	config.sim.TimeSteps = 1 + config.sim.TimeStepsPerOsz * config.sim.Oscillations;
 	
 	% Number of timesteps in which the projected pool needs to stay
 	% constant so that the simulation is considered finished.
 	config.sim.PoolConvergenceThreshold = ...	% [-] Recommended: One oscillation
-		ceil(config.sim.TimeSteps / config.sim.Oscillations);	
+		ceil(config.dis.TimeSteps / config.dis.Oscillations);	
 
 	config.sim.confirmMesh = true;
 	config.sim.saveSections = true;
-	config.sim.savePool = true;
+	config.sim.savePool = false;
 	config.sim.saveFinalTemps = true;
 	config.sim.saveMph = true;
 	config.sim.saveTimeStepMph = true;

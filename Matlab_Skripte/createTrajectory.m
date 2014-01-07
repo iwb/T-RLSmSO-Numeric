@@ -2,8 +2,8 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Cyl_x ] = createTrajectory( con
 %CREATETRAJECTORY Summary of this function goes here
 %   Detailed explanation goes here
 
-	tArray = linspace(0, config.sim.Oscillations / config.osz.Frequency, config.sim.TimeSteps); % = O/f * [t]
-	pArray =  linspace(0, 2*pi*config.sim.Oscillations, config.sim.TimeSteps); % = 2*pi*O * [t]
+	tArray = linspace(0, config.dis.Oscillations / config.osz.Frequency, config.dis.TimeSteps); % = O/f * [t]
+	pArray =  linspace(0, 2*pi*config.dis.Oscillations, config.dis.TimeSteps); % = 2*pi*O * [t]
 
 	KH_x = config.dis.StartX + config.osz.Amplitude + ...
 		config.osz.FeedVelocity * tArray - config.osz.Amplitude * cos(pArray); % [m]
@@ -17,8 +17,8 @@ function [ KH_x, KH_y, phiArray, speedArray, dt, Cyl_x ] = createTrajectory( con
 	phiArray = atan2(vy, vx);
 	speedArray = sqrt(vx.^2 + vy.^2);
 
-	dt = ones(1, config.sim.TimeSteps) .* ...
-		config.sim.Oscillations / (config.osz.Frequency * config.sim.TimeSteps);
+	dt = ones(1, config.dis.TimeSteps) .* ...
+		config.dis.Oscillations / (config.osz.Frequency * config.dis.TimeSteps);
 
 	% Koordinaten für den Mittelpunkt der Oszillation
 	Cyl_x = config.dis.StartX + config.osz.Amplitude + ...

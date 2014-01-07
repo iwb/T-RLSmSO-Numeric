@@ -1,6 +1,6 @@
 function solver = initSolver(model, dt)
 	
-colver = model.sol.create('sol1');
+solver = model.sol.create('sol1');
 solver.study('std1');
 solver.attach('std1');
 solver.feature.create('st1', 'StudyStep');
@@ -36,6 +36,8 @@ solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').s
 solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').set('linerelax', '0.4');
 solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').set('seconditer', '2');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('linsolver', 'pardiso');
+
+solver.feature('v1').set('control', 'time');
 
 solver.attach('std1');
 end
