@@ -106,7 +106,7 @@ if (config.sim.saveVideo)
 end
 
 if (config.sim.savePictures)
-    saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
+    saveas(gcf, sprintf(figurePath, i) ,'png');
 end
 
 %% MPH speichern
