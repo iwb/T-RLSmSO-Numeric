@@ -27,7 +27,7 @@ solver.feature('t1').feature('fc1').set('jtech', 'once');
 solver.feature('t1').feature('fc1').set('maxiter', '5');
 solver.feature('t1').feature('i1').set('rhob', '20');
 solver.feature('t1').feature('i1').feature('mg1').set('gmglevels', '3'); % Multigrid-Levels
-solver.feature('t1').feature('i1').feature('mg1').set('scale', '2'); % Coarsening Factor
+solver.feature('t1').feature('i1').feature('mg1').set('scale', '3'); % Coarsening Factor
 solver.feature('t1').feature('i1').feature('mg1').set('mkeep', 'on'); % Keep the meshes
 solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'coarseorder');
 solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('sl1').set('relax', '0.3');
