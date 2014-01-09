@@ -64,6 +64,7 @@ if (config.sim.savePool)
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
     poolPageSize = [size(range_x, 2), size(range_y, 2)];
     poolPages = size(range_z, 2);
+    save(poolPath, 'range_x', 'range_y', 'range_z');
     poolCoords = reshape(poolCoords, 3, prod(poolPageSize), poolPages);
     
     % Pool initialisieren
@@ -261,18 +262,18 @@ try
     end
     
     %% Pool kumulieren
-    fprintf('Saving pool ... ');
-    poolstart = tic;
     if (config.sim.savePool)
+        fprintf('Saving pool ... ');
+        poolstart = tic;
         for z = 1 : poolPages
             Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
             Temps = reshape(Temps, poolPageSize);
             Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
             ProjectedPool = ProjectedPool | squeeze(any(Pool, 1));
         end
+        pooltime(i) = toc(poolstart);
+        fprintf('done. (%0.1f min)\n', pooltime(i)/60);
     end
-    pooltime(i) = toc(poolstart);
-    fprintf('done. (%0.1f min)\n', pooltime(i)/60);
     
     %% MPH speichern
     if (config.sim.saveTimeStepMph)
@@ -409,7 +410,7 @@ catch msg
         fprintf('Saving pool ... ');
         flushDiary(logPath);
         poolCoords = reshape(poolCoords, 3, prod(poolPageSize) * poolPages);
-        save(poolPath, 'Pool', 'poolCoords');
+        save(poolPath, 'Pool', 'poolCoords', 'poolPages', 'poolPageSize');
         fprintf('done.\n');
         flushDiary(logPath);
     end
