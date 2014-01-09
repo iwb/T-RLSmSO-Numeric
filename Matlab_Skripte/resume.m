@@ -8,6 +8,11 @@ Solver = model.sol(sprintf('sol_%d', index));
 getNextSolver(0, 0, 0, index);
 getNextSolverMultigrid(0, 0, 0, index);
 
-for i= index+1 : iterations   
-    run('runIteration');
+try
+    for i= index+1 : iterations   
+        run('runIteration');
+    end
+catch msg
+    tweet(['Error! Calculation canceled. '  msg.identifier]);
+	rethrow (msg);
 end
