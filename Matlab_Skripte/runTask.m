@@ -397,6 +397,23 @@ try
     
 catch msg
     tweet(['Error! Calculation canceled. '  msg.identifier]);
+    
+    fprintf('Saving iteration times ... ');
+    flushDiary(logPath);
+    save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime', 'energy', 'iterpower');
+    fprintf('done.\n');
+    flushDiary(logPath);
+    
+    %% Pool speichern
+    if (config.sim.savePool)
+        fprintf('Saving pool ... ');
+        flushDiary(logPath);
+        poolCoords = reshape(poolCoords, 3, prod(poolPageSize) * poolPages);
+        save(poolPath, 'Pool', 'poolCoords');
+        fprintf('done.\n');
+        flushDiary(logPath);
+    end
+    
 	rethrow (msg);
 end
 
