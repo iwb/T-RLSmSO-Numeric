@@ -12,6 +12,12 @@ function [meshtime,stats] =  updateMesh( model )
 	end
 	
 	model.mesh('mesh1').run;
+    try % Der Vollständigkeit halber
+       model.mesh('mesh2').run;
+       model.mesh('mesh3').run;
+       model.mesh('mesh4').run;
+    catch
+    end
     
     meshtime = toc(meshstart);
 	fprintf('done. (%0.1f sec)\n', meshtime);
