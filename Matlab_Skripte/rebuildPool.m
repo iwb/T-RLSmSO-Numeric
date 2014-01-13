@@ -44,6 +44,7 @@ for i=1:filecount
     
     pooltime = toc(poolstart);
     fprintf('done in %0.1f min.\n', pooltime/60);
+    visp = sum(Pool, 3);
     imshow(visp);
     drawnow;
 end
