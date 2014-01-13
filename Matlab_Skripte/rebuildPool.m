@@ -12,7 +12,7 @@ if ~exist('poolCoords', 'var')
     poolCoords = reshape(poolCoords, 3, prod(poolPageSize), poolPages);
 end
 % Pool initialisieren
-Pool = false(size(poolCoords));
+Pool = false([poolPageSize, poolPages]);
 ProjectedPool = false(size(range_y, 2), size(range_z, 2));
 
 % Count files
