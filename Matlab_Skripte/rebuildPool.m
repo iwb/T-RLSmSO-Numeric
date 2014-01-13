@@ -42,6 +42,12 @@ for i=1:filecount
         ProjectedPool = ProjectedPool | squeeze(any(Pool, 1));
     end
     
+    model.result.numerical('int1').set('data', ['dset' num2str(i)]);
+    % Workaround
+    model.result.numerical('int1').selection.set([]);
+    model.result.numerical('int1').selection.all;
+    energy(i) = model.result.numerical('int1').getReal(); %#ok<SAGROW>
+    
     pooltime = toc(poolstart);
     fprintf('done in %0.1f min.\n', pooltime/60);
     visp = sum(Pool, 3) / 20;
