@@ -15,26 +15,34 @@ end
 Pool = false(size(XX));
 ProjectedPool = false(size(range_y, 2), size(range_z, 2));
 
+% Count files
 i = 0;
 while(true)
     i = i + 1;
     filename = sprintf('../Ergebnisse/Model_%03d.mph', i);
-    
-    if ~exist('filename', 'file')
+    if ~exist(filename, 'file')
         break;
     end
-    
-    model = mphload(filename);
-    
-    fprintf('%03d ... ', i);
-    
+end
+filecount = i-1;
+
+for i=1:filecount
+    filename = sprintf('../Ergebnisse/Model_%03d.mph', i);
+
     poolstart = tic;
+    
+    fprintf('Loading %03d ... ', i);
+    model = mphload(filename);
+    fprintf('done. Accumulating Pool ... ');
+    
     for z = 1 : poolPages
         Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
         Temps = reshape(Temps, poolPageSize);
         Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
         ProjectedPool = ProjectedPool | squeeze(any(Pool, 1));
     end
+    
     pooltime = toc(poolstart);
-    fprintf('done. (%0.1f min)\n', pooltime/60);
+    fprintf('done in %0.1f min.\n', pooltime/60);
+    imshow(visp)
 end
