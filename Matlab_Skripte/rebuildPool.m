@@ -12,7 +12,7 @@ if ~exist('poolCoords', 'var')
     poolCoords = reshape(poolCoords, 3, prod(poolPageSize), poolPages);
 end
 % Pool initialisieren
-Pool = false(size(XX));
+Pool = false(size(poolCoords));
 ProjectedPool = false(size(range_y, 2), size(range_z, 2));
 
 % Count files
@@ -44,5 +44,6 @@ for i=1:filecount
     
     pooltime = toc(poolstart);
     fprintf('done in %0.1f min.\n', pooltime/60);
-    imshow(visp)
+    imshow(visp);
+    drawnow;
 end
