@@ -64,7 +64,12 @@ energy(i) = model.result.numerical('int1').getReal();
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
-    subplot(2, 1, 2);
+    if exist('h1', 'var')
+        subplot(2, 1, 2);
+    else
+        h1 = subplot(2, 1, 2);
+        ax1 = get(h1,'position'); % Save the position as ax
+    end
     mphplot(model, 'pg', 'rangenum', 1);
     set(gca,'position',ax1); % Manually setting this holds the position with colorbar
     drawnow;

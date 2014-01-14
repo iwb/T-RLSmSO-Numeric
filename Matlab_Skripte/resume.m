@@ -6,6 +6,8 @@ addpath('../PP_Zylinderquelle');
 
 index = i - 1;
 
+ModelUtil.clear;
+ModelUtil.remove('Model');
 ModelUtil.showProgress(config.sim.showComsolProgress);
 
 model = mphload(sprintf(timeStepMphPath, index));
