@@ -5,6 +5,7 @@ addpath('./debugging');
 addpath('../PP_Zylinderquelle');
 
 index = i - 1;
+PoolConvergence = 0;
 
 ModelUtil.clear;
 ModelUtil.remove('Model');
