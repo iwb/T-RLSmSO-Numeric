@@ -1,19 +1,13 @@
-function depth = updateKeyhole(model, speed, temp, config)
+function depth = updateKeyhole(model, speed, temp, config, varargin)
 %UPDATEKEYHOLE Summary of this function goes here
 %   Detailed explanation goes here
 
-khg = calcKeyhole(config.dis.KeyholeResolution, speed, temp, config);
-assignin('base', 'khg', khg);
-CenterArray = khg(2, :);
-% Calculate the differences of the centers
-DisplacementArray = diff(CenterArray);
-RadiusArray = khg(3, :);
-RatioArray = RadiusArray(2:end) ./ RadiusArray(1:end-1);
-HeightArray = - diff(khg(1, :));
-
-conetags = cell(0);
-
 persistent maxTag;
+
+if (nargin == 5)
+    maxTag = varargin{1};
+    return;
+end
 
 if isempty(maxTag)
 	maxTag = 0;
@@ -26,6 +20,16 @@ else
     end
 end
 
+khg = calcKeyhole(config.dis.KeyholeResolution, speed, temp, config);
+assignin('base', 'khg', khg);
+CenterArray = khg(2, :);
+% Calculate the differences of the centers
+DisplacementArray = diff(CenterArray);
+RadiusArray = khg(3, :);
+RatioArray = RadiusArray(2:end) ./ RadiusArray(1:end-1);
+HeightArray = - diff(khg(1, :));
+
+conetags = cell(0);
 
 for i = 1:size(CenterArray, 2)-1
 	% This loops over every gap between two circles. Therefore, the top
