@@ -32,3 +32,5 @@ catch msg
     tweet(['Error! Calculation canceled. '  msg.identifier]);
 	rethrow (msg);
 end
+
+tweet('Resume Operation ended successfully.');
