@@ -13,6 +13,10 @@ config = initConfig;
 
 output_path = '../Ergebnisse/';
 
+if ~exist(output_path, 'dir')
+   mkdir(output_path);
+end
+
 logPath = [output_path 'diary.log'];
 gifPath = [output_path 'animation.gif'];
 figurePath = [output_path 'Figure_%03d.png'];
