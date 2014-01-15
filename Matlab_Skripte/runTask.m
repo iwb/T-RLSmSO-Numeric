@@ -369,19 +369,29 @@ try
     
     %% Endtemperaturen speichern
     if (config.sim.saveFinalTemps)
-        fprintf('Saving final temps ... ');
+        fprintf('Saving final temps ...        ');
         flushDiary(logPath);
-        resolution = 40e-6; % [m]
-        range_x = 0 : resolution : 5e-3;
-        range_y = -2e-3 : resolution : 2e-3;
-        range_z = 0: -resolution : -2e-3;
         
-        [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
+        resolution = 10e-6; % [m]
+        range_x = 1e-3 : resolution : 4e-3;
+        range_y = -1e-3 : resolution : 1e-3;
+        range_z = 0: -resolution : -2e-4;
+        
+        [YY, XX, ZZ] = meshgrid(range_y, range_x, range_z);
         finalCoords = [XX(:)'; YY(:)'; ZZ(:)'];
         
-        FinalTemps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+        ftPageSize = [size(range_x, 2), size(range_y, 2)];
+        ftPages = size(range_z, 2);
+        finalCoords = reshape(finalCoords, 3, prod(ftPageSize), ftPages);
+        FinalTemps = NaN(size(XX));
         
-        save([output_path 'FinalTemps.mat'], 'FinalTemps', 'finalCoords');
+        for z = 1 : ftPages
+            Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', finalCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+            FinalTemps(:, :, z) = reshape(Temps, ftPageSize);
+            fprintf('\b\b\b\b\b\b\b%3d/%3d', z, ftPages);
+        end
+        
+        save([output_path 'FinalTemps.mat'], 'range_x', 'range_y', 'range_z', 'FinalTemps', 'finalCoords');
         fprintf('done.\n');
         flushDiary(logPath);
         clear finalCoords resolution range_x range_y range_z XX YY ZZ

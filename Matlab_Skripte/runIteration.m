@@ -82,12 +82,13 @@ end
 
 %% Pool kumulieren
 if (config.sim.savePool)
-    fprintf('Saving pool ... ');
+    fprintf('Saving pool ...        ');
     poolstart = tic;
     for z = 1 : poolPages
         Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
         Temps = reshape(Temps, poolPageSize);
         Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
+        fprintf('\b\b\b\b\b\b\b%3d/%3d', z, poolPages);
     end
     
     projection = squeeze(any(Pool, 1));
