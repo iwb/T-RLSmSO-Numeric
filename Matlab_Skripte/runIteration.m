@@ -99,6 +99,8 @@ if (config.sim.savePool)
     end
     ProjectedPool = ProjectedPool | projection;
     
+    save(poolPath, 'Pool', 'poolPages', 'poolPageSize');
+    
     pooltime(i) = toc(poolstart);
     fprintf('done. (%0.1f min)\n', pooltime(i)/60);
 end

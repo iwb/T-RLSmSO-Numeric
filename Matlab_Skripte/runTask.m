@@ -19,6 +19,7 @@ figurePath = [output_path 'Figure_%03d.png'];
 sectionPath = [output_path 'Section_%03d.mat'];
 timeStepMphPath = [output_path 'Model_%03d.mph'];
 poolPath = [output_path 'Pool.mat'];
+poolCoordsPath = [output_path 'Pool.mat'];
 timesPath = [output_path 'Iteration_Times.mat'];
 workspacePath = [output_path 'workspace.mat'];
 
@@ -64,7 +65,7 @@ if (config.sim.savePool)
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
     poolPageSize = [size(range_x, 2), size(range_y, 2)];
     poolPages = size(range_z, 2);
-    save(poolPath, 'range_x', 'range_y', 'range_z');
+    save(poolCoordsPath, 'range_x', 'range_y', 'range_z');
     poolCoords = reshape(poolCoords, 3, prod(poolPageSize), poolPages);
     
     % Pool initialisieren
