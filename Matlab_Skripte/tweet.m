@@ -15,6 +15,9 @@ function tweet( message )
             end
         end
         try
+            if exist('twitterPrefix', 'file')
+               message = [TwitterPrefix() message]; 
+            end
             TwitterObj.updateStatus(message);
         catch
             % Fehler beim twittern werden geschluckt
