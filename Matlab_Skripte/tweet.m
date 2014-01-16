@@ -16,7 +16,7 @@ function tweet( message )
         end
         try
             if exist('twitterPrefix', 'file')
-               message = [TwitterPrefix() message]; 
+               message = [twitterPrefix() message]; 
             end
             TwitterObj.updateStatus(message);
         catch
