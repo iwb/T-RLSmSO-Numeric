@@ -23,7 +23,7 @@ figurePath = [output_path 'Figure_%03d.png'];
 sectionPath = [output_path 'Section_%03d.mat'];
 timeStepMphPath = [output_path 'Model_%03d.mph'];
 poolPath = [output_path 'Pool.mat'];
-poolCoordsPath = [output_path 'Pool.mat'];
+poolCoordsPath = [output_path 'Poolcoords.mat'];
 timesPath = [output_path 'Iteration_Times.mat'];
 workspacePath = [output_path 'workspace.mat'];
 
