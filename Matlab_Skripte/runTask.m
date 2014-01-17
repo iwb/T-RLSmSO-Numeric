@@ -309,7 +309,7 @@ try
     end
     
     if (config.sim.savePictures)
-        saveas(gcf, sprintf([output_path 'Figure_%02d.png'], i) ,'png');
+        saveas(gcf, sprintf([output_path 'Figure_%03d.png'], i) ,'png');
     end
     
     SensorTempHist = zeros(iterations,5);
