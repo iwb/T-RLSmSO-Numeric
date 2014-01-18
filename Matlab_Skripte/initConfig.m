@@ -19,8 +19,8 @@ function [ config ] = initConfig()
 	config.dis.KeyholeResolution = 12;	% [µm]
 	config.dis.StartX = 2e-3;			% [m]
     
-    config.dis.TimeStepsPerOsz = 200;			% [-]
-	config.dis.Oscillations = 1.5;				% [-] X.5 recommended
+    config.dis.TimeStepsPerOsz = 20;			% [-]
+	config.dis.Oscillations = 9.5;				% [-] X.5 recommended
 	config.dis.TimeSteps = 1 + config.dis.TimeStepsPerOsz * config.dis.Oscillations;
 
     % Use T-dependent material (will ignore some constants below)

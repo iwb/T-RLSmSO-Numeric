@@ -58,9 +58,12 @@ fprintf('done. (%0.1f min)\n', solvertime(i)/60);
 
 model.result.numerical('int1').set('data', ['dset' num2str(i)]);
 % Workaround
-model.result.numerical('int1').selection.set([]);
+model.result.numerical('int1').selection.named('geom1_blk1_dom');
+model.result.numerical('int1').getReal();
+% Richtige Auswertung
 model.result.numerical('int1').selection.all;
 energy(i) = model.result.numerical('int1').getReal();
+fprintf('Iterpower: %.1f W\n', (energy(i) - energy(i-1)) ./ dt(i));
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)
@@ -84,12 +87,14 @@ end
 if (config.sim.savePool)
     fprintf('Saving pool ...        ');
     poolstart = tic;
+    diary off;
     for z = 1 : poolPages
         Temps = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i)], 'coord', poolCoords(:, :, z), 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
         Temps = reshape(Temps, poolPageSize);
         Pool(:, :, z) = Pool(:, :, z) | (Temps > config.mat.MeltingTemperature);
         fprintf('\b\b\b\b\b\b\b%3d/%3d', z, poolPages);
     end
+    diary(logPath);
     
     projection = squeeze(any(Pool, 1));
     if any(any(projection & ~ProjectedPool)) % If new points are added
@@ -102,7 +107,7 @@ if (config.sim.savePool)
     save(poolPath, 'Pool', 'poolPages', 'poolPageSize');
     
     pooltime(i) = toc(poolstart);
-    fprintf('done. (%0.1f min)\n', pooltime(i)/60);
+    fprintf(' done. (%0.1f min)\n', pooltime(i)/60);
 end
 
 %% GIF Animation erzeugen
