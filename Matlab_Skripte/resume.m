@@ -33,4 +33,6 @@ catch msg
 	rethrow (msg);
 end
 
+runFinalization;
+
 tweet('Resume Operation ended successfully.');
