@@ -9,6 +9,9 @@ function [meshtime,stats] =  updateMesh( model )
 	% may have changed.
 	if strcmp(char(model.mesh('mesh1').current), 'ftet2')
 		model.mesh('mesh1').feature('ftet1').selection.named('FM_Domain');
+    end
+    if strcmp(char(model.mesh('mesh1').current), 'ftet3')
+		model.mesh('mesh1').feature('ftet2').selection.named('KH_Domain');
 	end
 	
 	model.mesh('mesh1').run;

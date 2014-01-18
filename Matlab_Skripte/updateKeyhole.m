@@ -88,7 +88,6 @@ model.geom('geom1').run; % Damit die Selektion funktioniert...
 if (maxTag == 0)
     model.selection.create('FM_Domain', 'Explicit');
     % Include only the ROI cone in the fine mesh
-    model.selection('FM_Domain').set(2);
     model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
     model.selection.create('KH_Bounds', 'Complement');
@@ -99,6 +98,7 @@ if (maxTag == 0)
 	model.selection.create('KH_Domain', 'Explicit');
     model.selection('KH_Domain').name('Keyhole_Domain');
 end
+model.selection('FM_Domain').set(2);
 model.selection('KH_Domain').set(3 : i+2);    
 
 maxTag = i;
