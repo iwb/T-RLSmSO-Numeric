@@ -11,13 +11,6 @@ end
 
 if isempty(maxTag)
 	maxTag = 0;
-else
-    model.geom('geom1').feature.remove('dif1');
-    
-    % Remove cones
-    for j = maxTag : -1 : 1
-        model.geom('geom1').feature.remove(['econ_' num2str(j)]);
-    end
 end
 
 khg = calcKeyhole(config.dis.KeyholeResolution, speed, temp, config);
@@ -34,7 +27,6 @@ conetags = cell(0);
 for i = 1:size(CenterArray, 2)-1
 	% This loops over every gap between two circles. Therefore, the top
 	% circle is at i and the bottom circle is at i+1.
-
     	
 	% Position of top circle, relative to the laser center
     pos = {sprintf('Lx + cos(phi) * %.12e [m]', CenterArray(i)), ...
@@ -49,10 +41,14 @@ for i = 1:size(CenterArray, 2)-1
 		break;
     end
     new_tag = ['econ_' num2str(i)];
+	% Maybe there is already a cone there, we just need to update...
+	if (i > maxTag)
+		cone = model.geom('geom1').feature.create(['econ_' num2str(i)], 'ECone');
+	else
+		cone = model.geom('geom1').feature(['econ_' num2str(i)]);
+	end	
 	conetags{end+1} = new_tag; 
-    
-	cone = model.geom('geom1').feature.create(new_tag, 'ECone');
-    
+        
 	ratio = RatioArray(i);
 	height_str = sprintf('%.12e', height);
 
@@ -65,11 +61,15 @@ for i = 1:size(CenterArray, 2)-1
 	cone.set('rot', '-phi');
 end
 
+for j = i+1 : maxTag
+    model.geom('geom1').feature.remove(['econ_' num2str(j)]);
+end
+
 depth = khg(1, i+1);
 
 fprintf('Keyhole was build out of %d elements, %4.0fµm deep.\n', i, -depth * 1e6);
 
-%% Zylinder anpassen
+%% ROI Konus anpassen
 Cyl_height = min(config.dis.SampleThickness, -depth * 1.5);
 model.param.set('Cyl_h', sprintf('%.12e [m]', Cyl_height));
 
@@ -83,18 +83,11 @@ newR = max([prevR, maxR1, maxR2]);
 model.param.set('Cyl_r', sprintf('%.12e [m]', newR));
 
 %% Geometrie finalisieren
-
-model.geom('geom1').run(conetags{end});
-model.geom('geom1').feature.create('dif1', 'Difference');
-model.geom('geom1').runPre('dif1');
-model.geom('geom1').feature('dif1').selection('input').set({'blk1' 'roicone'});
-model.geom('geom1').feature('dif1').selection('input2').set(conetags);
-
 model.geom('geom1').run; % Damit die Selektion funktioniert...
 
 if (maxTag == 0)
     model.selection.create('FM_Domain', 'Explicit');
-    % Include the ROI cone in the fine mesh
+    % Include only the ROI cone in the fine mesh
     model.selection('FM_Domain').set(2);
     model.selection('FM_Domain').name('Fine_Meshed_Domain');
 
@@ -102,7 +95,11 @@ if (maxTag == 0)
     model.selection('KH_Bounds').set('entitydim', '2');    
     model.selection('KH_Bounds').set('input', {'geom1_blk1_bnd' 'geom1_roicone_bnd'});    
     model.selection('KH_Bounds').name('Keyhole_Bounds');
+	
+	model.selection.create('KH_Domain', 'Explicit');
+    model.selection('KH_Domain').name('Keyhole_Domain');
 end
+model.selection('KH_Domain').set(3 : i+2);    
 
 maxTag = i;
 end
