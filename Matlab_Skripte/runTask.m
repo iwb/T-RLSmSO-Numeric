@@ -17,15 +17,16 @@ if ~exist(output_path, 'dir')
    mkdir(output_path);
 end
 
-logPath = [output_path 'diary.log'];
-gifPath = [output_path 'animation.gif'];
+logPath = [output_path '0 diary.log'];
+gifPath = [output_path '9 animation.gif'];
 figurePath = [output_path 'Figure_%03d.png'];
 sectionPath = [output_path 'Section_%03d.mat'];
 timeStepMphPath = [output_path 'Model_%03d.mph'];
-poolPath = [output_path 'Pool.mat'];
-poolCoordsPath = [output_path 'Poolcoords.mat'];
-timesPath = [output_path 'Iteration_Times.mat'];
-workspacePath = [output_path 'workspace.mat'];
+poolCoordsPath = [output_path '3 Poolcoords.mat'];
+poolPath = [output_path '4 Pool.mat'];
+timesPath = [output_path '5 Iteration_Times.mat'];
+energyPath = [output_path '6 Energy.mat'];
+workspacePath = [output_path '7 workspace.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
     error('To save the video, you must enable the plot!');
@@ -54,7 +55,7 @@ if (config.sim.saveSections)
     [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
     sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
     
-    save([output_path 'Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
+    save([output_path '2 Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
     clear resolution range_x range_y range_z XX YY ZZ
 end
 
@@ -90,7 +91,7 @@ step_distance = sqrt(sum(([KH_x(2) ; KH_y(2)] - [KH_x(1) ; KH_y(1)]).^2));
 
 fprintf('Pe: %.1f, WEZ: %.1e, SW: %.1e\n', Pe, thermal_distance, step_distance);
 
-save([output_path 'KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
+save([output_path '1 KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Anzahl der Iterationen definieren

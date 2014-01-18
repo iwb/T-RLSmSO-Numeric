@@ -20,7 +20,7 @@ flushDiary(logPath);
 if (config.sim.saveMph)
     fprintf('Saving mph file ... ');
     flushDiary(logPath);
-    mphsave(model, [output_path 'Final_Model.mph']);
+    mphsave(model, [output_path '8 Final_Model.mph']);
     fprintf('done.\n');
     flushDiary(logPath);
 end
