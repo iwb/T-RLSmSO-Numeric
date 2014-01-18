@@ -64,6 +64,7 @@ model.result.numerical('int1').getReal();
 model.result.numerical('int1').selection.all;
 energy(i) = model.result.numerical('int1').getReal();
 fprintf('Iterpower: %.1f W\n', (energy(i) - energy(i-1)) ./ dt(i));
+save(energyPath, 'energy');
 
 %% Temperaturfeld Plotten
 if (config.sim.showPlot)

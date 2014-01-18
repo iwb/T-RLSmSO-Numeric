@@ -13,7 +13,8 @@ iterpower = addedEnergy ./ dt(2:iterations)';
 %% Daten speichern
 fprintf('Saving iteration times ... ');
 flushDiary(logPath);
-save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime', 'energy', 'iterpower');
+save(energyPath,  'energy', 'addedEnergy', 'iterpower');
+save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime');
 fprintf('done.\n');
 flushDiary(logPath);
 

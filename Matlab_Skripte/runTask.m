@@ -341,9 +341,12 @@ try
 catch msg
     tweet(['Error! Calculation canceled. '  msg.identifier]);
     
+	fprintf('\n\nException handling invoked.\n');
+	
     fprintf('Saving iteration times ... ');
     flushDiary(logPath);
-    save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime', 'energy');
+	save(energyPath, 'energy');
+    save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime',);
     fprintf('done.\n');
     flushDiary(logPath);
     
