@@ -26,7 +26,7 @@ end
 
 try
     for i= index+1 : iterations   
-        run('runIteration');
+        runIteration;
     end
 catch msg
     tweet(['Error! Calculation canceled. '  msg.identifier]);
