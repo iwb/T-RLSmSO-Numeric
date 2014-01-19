@@ -83,8 +83,11 @@ end
 
 %% Schnitt speichern
 if (config.sim.saveSections)
+    fprintf('Saving sections ... ');
     saveSection(model, i, sectionCoords, sectionPath);
+    fprintf('done.\n');
 end
+flushDiary(logPath);
 
 %% Pool kumulieren
 if (config.sim.savePool)
