@@ -137,7 +137,10 @@ thistime = toc(iterstart);
 progress_msg = sprintf('Iteration %2d/%2d was finished in %.1f minutes\n', i, iterations, thistime/60);
 
 if (i < iterations)
-    itertime = 0.8 * itertime + 0.2 * thistime;
+    if ~exist('itertime', 'var')
+		itertime = thistime;
+	end
+	itertime = 0.9 * itertime + 0.1 * thistime;
     remaining = (iterations - i) * itertime;
     progress_msg = [progress_msg sprintf('Approximately %4.1f minutes remaining (%s).\n\n', remaining/60,  datestr(now + remaining/86400, 'yyyy-mm-dd HH:MM:SS'))]; %#ok<AGROW>
 end
