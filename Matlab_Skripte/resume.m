@@ -17,7 +17,7 @@ Solver = model.sol(sprintf('sol_%d', index));
 getNextSolver(0, 0, 0, index);
 getNextSolverMultigrid(0, 0, 0, index);
 
-conecount = model.geom('geom1').feature.size - 4;
+conecount = model.geom('geom1').feature.size - 3;
 updateKeyhole(0, 0, 0, 0, conecount);
 
 if exist(logPath, 'file')
