@@ -50,6 +50,12 @@ end
 %% Modell Lösen
 fprintf('Solving model ... ');
 solverstart = tic;
+
+try
+    model.physics('ht').feature('disc1').set('order_temperature', 1, '2');
+catch
+end
+
 Solver.runAll;
 solvertime(i) = toc(solverstart);
 fprintf('done. (%0.1f min)\n', solvertime(i)/60);
