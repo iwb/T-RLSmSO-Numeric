@@ -62,9 +62,9 @@ end
 %% Koordinaten für den Pool
 if (config.sim.savePool)
     resolution = 10e-6; % [m]
-    range_x = (0 : resolution : config.dis.SampleLength);
-    range_y = (-config.dis.SampleWidth/4 : resolution : config.dis.SampleWidth/4);
-    range_z = (0 : -resolution : -config.dis.SampleThickness);
+    range_x = (1.5e-3 : resolution : 4e-3);
+    range_y = (-1e-3 : resolution : 1e-3);
+    range_z = (0 : -resolution : -1.5e-3);
     
     [YY, XX, ZZ] = meshgrid(range_y, range_x, range_z);
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -346,7 +346,7 @@ catch msg
     fprintf('Saving iteration times ... ');
     flushDiary(logPath);
 	save(energyPath, 'energy');
-    save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime',);
+    save(timesPath, 'keyholetime', 'meshtime', 'solvertime', 'pooltime');
     fprintf('done.\n');
     flushDiary(logPath);
     
