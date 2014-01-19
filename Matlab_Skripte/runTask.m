@@ -315,6 +315,9 @@ try
     
     SensorTempHist = zeros(iterations,5);
     
+    model.physics('ht').feature.create('disc2', 'Discretization');
+    model.physics('ht').feature('disc2').set('order_temperature', 1, '2');
+    
     %% Wichtig, da sonst die Nummern der Solver nicht mehr stimmen!
     clear getnextSolver;
     clear getnextSolverMultigrid;
