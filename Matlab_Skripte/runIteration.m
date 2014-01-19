@@ -33,6 +33,7 @@ end
 SensorTempHist(i, :) = SensorTemp;
 % mean(SensorTemps)
 KH_depth = updateKeyhole(model, speedArray(i), T_inf, config);
+save([output_path '1 KeyholeGeometrie.mat'], 'khg');
 keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
 
