@@ -50,6 +50,7 @@ end
 
 %% Modell Lösen
 fprintf('Solving model ... ');
+flushDiary(logPath);
 solverstart = tic;
 Solver.runAll;
 solvertime(i) = toc(solverstart);
