@@ -28,11 +28,22 @@ function [ New_Solver ] = getNextSolverMultigrid(model, Old_Solver, dt, varargin
     New_Solver.feature.create('v1', 'Variables');
     New_Solver.feature.create('t1', 'Time');
     New_Solver.feature('t1').feature.create('fc1', 'FullyCoupled');
+    New_Solver.feature('t1').feature('fc1').set('jtech', 'once');
+    New_Solver.feature('t1').feature('fc1').set('damp', '0.9');
+    New_Solver.feature('t1').feature('fc1').set('maxiter', '5');
+	
+	% Conjugate Gradient
     New_Solver.feature('t1').feature.create('i1', 'Iterative');
     New_Solver.feature('t1').feature('i1').feature.create('mg1', 'Multigrid');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature.create('sl1', 'SORLine');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('po').feature.create('sl1', 'SORLine');
+    New_Solver.feature('t1').feature('i1').set('rhob', '20');
+	New_Solver.feature('t1').feature('i1').set('linsolver', 'cg');
+	% Multigrid
+    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'manual');
+	New_Solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('soDef').set('prefun', 'ssor');
+	New_Solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('soDef').set('prefun', 'ssor');
     New_Solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature.create('d1', 'Direct');
+    New_Solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('linsolver', 'pardiso');
+	New_Solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('pardmtsolve', true);
     New_Solver.feature('t1').feature.remove('fcDef');
 
     New_Solver.feature('st1').name('Compile Equations: Time Dependent {time}');
@@ -47,23 +58,10 @@ function [ New_Solver ] = getNextSolverMultigrid(model, Old_Solver, dt, varargin
     New_Solver.feature('t1').set('rtol', '0.001');
     New_Solver.feature('t1').set('tlist', '4.4E-4');
     New_Solver.feature('t1').set('control', 'time');
-    New_Solver.feature('t1').set('bwinitstepfrac', '0.001');
-    New_Solver.feature('t1').set('tstepsbdf', 'strict');
-    New_Solver.feature('t1').feature('fc1').set('jtech', 'once');
-    New_Solver.feature('t1').feature('fc1').set('damp', '0.9');
-    New_Solver.feature('t1').feature('fc1').set('maxiter', '5');
-    New_Solver.feature('t1').feature('i1').set('rhob', '20');
-    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'manual');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('sl1').set('relax', '0.3');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('sl1').set('linerelax', '0.4');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').set('seconditer', '2');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').set('relax', '0.5');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('sl1').set('linerelax', '0.4');
-    New_Solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('linsolver', 'pardiso');
     
     % Multigrids wieder benutzen
-    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseuse', {'mgl1' 'mgl2' 'mgl3'}); 
-    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseassem', {'mgl1' 'mgl2' 'mgl3'});
+    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseuse', {'mgl1' 'mgl2'}); 
+    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseassem', {'mgl1' 'mgl2'});
 
     model.result('pg').set('data', new_dset);
 
