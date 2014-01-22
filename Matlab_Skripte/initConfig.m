@@ -25,12 +25,12 @@ function [ config ] = initConfig()
 
     % Use T-dependent material (will ignore some constants below)
 	config.mat.UseSysweld = true; 
-	config.mat.ThermalConductivity  = 33.63;   % Wärmeleitfähigkeit [W/(mK)]
-	config.mat.Density = 7033;                 % Dichte [kg/m³]
-	config.mat.HeatCapacity = 711.4;           % spezifische Wärmekapazität [J/(kgK)]
+	config.mat.ThermalConductivity  = 30.5;    % Wärmeleitfähigkeit [W/(mK)]
+	config.mat.Density = 7035;                 % Dichte [kg/m³]
+	config.mat.HeatCapacity = 492;             % spezifische Wärmekapazität [J/(kgK)]
 	config.mat.FresnelEpsilon = 0.25;          % Materialparameter für Fresnel Absorption [-]
 	config.mat.FusionEnthalpy = 2.75e5;        % Schmelzenthalpie [J/kg]
-	config.mat.MeltingTemperature = 1796;      % Schmelztemperatur [K]
+	config.mat.MeltingTemperature = 1793;      % Schmelztemperatur [K]
 	config.mat.VaporTemperature = 3133;        % Verdampfungstemperatur [K]
 	config.mat.AmbientTemperature = 300;       % Umgebungstemperatur [K]
 	
