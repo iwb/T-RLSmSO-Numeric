@@ -1,10 +1,12 @@
 %% Schleife beendet, Zeit ausgeben
 clearvars Solver
 
-alltime = toc(allstart);
-progress_msg = sprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime, 3600)/60);
-fprintf(progress_msg);
-tweet(progress_msg);
+if exist('allstart', 'var')
+    alltime = toc(allstart);
+    progress_msg = sprintf('\nOverall time taken: %dh%02.0fm\n', floor(alltime / 3600), rem(alltime, 3600)/60);
+    fprintf(progress_msg);
+    tweet(progress_msg);
+end
 
 %% Eingebrachte Leistung in jeder Iteration berechnen
 addedEnergy = diff(energy);
