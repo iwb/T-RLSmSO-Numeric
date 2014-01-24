@@ -17,7 +17,7 @@ solver.feature('t1').feature('i1').set('linsolver', 'cg');
 solver.feature('t1').feature('i1').feature.create('mg1', 'Multigrid');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature.create('d1', 'Direct');
 solver.feature('t1').feature('i1').feature('mg1').set('gmglevels', '2'); % Multigrid-Levels
-solver.feature('t1').feature('i1').feature('mg1').set('scale', '5'); % Coarsening Factor
+solver.feature('t1').feature('i1').feature('mg1').set('scale', '3'); % Coarsening Factor
 solver.feature('t1').feature('i1').feature('mg1').set('mkeep', 'on'); % Keep the meshes
 solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'coarse');
 solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('soDef').set('prefun', 'ssor');
