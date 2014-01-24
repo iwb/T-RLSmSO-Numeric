@@ -258,6 +258,7 @@ try
     %% Temperaturfeld Plotten
     if (config.sim.showPlot)
         h1 = subplot(2, 1, 2);
+        ax1 = get(h1,'position'); % Save the position as ax
         mphplot(model, 'pg', 'rangenum', 1);
         drawnow;
     end
@@ -300,9 +301,7 @@ try
     %% GIF, erster Frame
     if (config.sim.saveVideo)
         % Next line of code are intended to stop the subplots from shrinking
-        % while using colorbar, standard bug in matlab.
-        ax1 = get(h1,'position'); % Save the position as ax
-        
+        % while using colorbar, standard bug in matlab.        
         frame = getframe(gcf);
         im = frame2im(frame);
         [imind,cm] = rgb2ind(im, 256);
