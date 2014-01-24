@@ -16,14 +16,18 @@ solver.feature('t1').feature('i1').set('linsolver', 'cg');
 
 solver.feature('t1').feature('i1').feature.create('mg1', 'Multigrid');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature.create('d1', 'Direct');
-solver.feature('t1').feature('i1').feature('mg1').set('gmglevels', '2'); % Multigrid-Levels
+solver.feature('t1').feature('i1').feature('mg1').set('gmglevels', '3'); % Multigrid-Levels
 solver.feature('t1').feature('i1').feature('mg1').set('scale', '3'); % Coarsening Factor
 solver.feature('t1').feature('i1').feature('mg1').set('mkeep', 'on'); % Keep the meshes
 solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'coarse');
 solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('soDef').set('prefun', 'ssor');
+solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('soDef').set('relax', '1.5');
 solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('soDef').set('prefun', 'ssor');
+solver.feature('t1').feature('i1').feature('mg1').feature('po').feature('soDef').set('relax', '1.5');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('linsolver', 'pardiso');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('pardmtsolve', true);
+solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature('d1').set('pardrreorder', 'off');
+
 solver.feature('t1').feature.remove('fcDef');
 solver.feature('st1').name('Compile Equations: Time Dependent {time}');
 solver.feature('st1').set('studystep', 'time');

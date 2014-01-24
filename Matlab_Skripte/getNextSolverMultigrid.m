@@ -60,8 +60,8 @@ function [ New_Solver ] = getNextSolverMultigrid(model, Old_Solver, dt, varargin
     New_Solver.feature('t1').set('control', 'time');
     
     % Multigrids wieder benutzen
-    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseuse', {'mgl1' 'mgl2'}); 
-    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseassem', {'mgl1' 'mgl2'});
+    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseuse', {'mgl1' 'mgl2' 'mgl3'}); 
+    New_Solver.feature('t1').feature('i1').feature('mg1').set('mcaseassem', {'mgl1' 'mgl2' 'mgl3'});
 
     model.result('pg').set('data', new_dset);
 
