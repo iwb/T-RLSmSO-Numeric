@@ -84,8 +84,10 @@ end
 %% Schnitt speichern
 if (config.sim.saveSections)
     fprintf('Saving sections ... ');
+    sectionstart = tic;
     saveSection(model, i, sectionCoords, sectionPath);
-    fprintf('done.\n');
+    sectiontime(i) = toc(sectionstart);
+    fprintf('done. (%0.1f min)\n', sectiontime(i)/60);
 end
 flushDiary(logPath);
 
@@ -131,9 +133,12 @@ end
 %% MPH speichern
 if (config.sim.saveTimeStepMph)
     fprintf('Saving mph file ... ');
+    mphsavestart = tic;
     flushDiary(logPath);
     mphsave(model, sprintf(timeStepMphPath, i));
-    fprintf('done.\n');
+    
+    mphsavetime(i) = toc(mphsavestart);
+    fprintf('done. (%0.1f min)\n', mphsavetime(i)/60);
     flushDiary(logPath);
 end
 
