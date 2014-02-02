@@ -52,10 +52,15 @@ if (config.sim.saveSections)
     range_y = single(linspace(-4e-4, 4e-4, 9));
     range_z = single(0 : -resolution : -1.2e-3);
     
+    sectionPageSize = [size(range_x, 2), size(range_z, 2)];
+    sectionPages = size(range_y, 2);
+    
     [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
     sectionCoords = [XX(:)'; YY(:)'; ZZ(:)'];
     
-    save([output_path '2 Section_Coords.mat'], 'range_x', 'range_y', 'range_z');
+    save([output_path '2 Section_Coords.mat'], 'range_x', 'range_y', 'range_z');    
+    sectionCoords = reshape(sectionCoords, 3, prod(sectionPageSize), sectionPages);
+    
     clear resolution range_x range_y range_z XX YY ZZ
 end
 

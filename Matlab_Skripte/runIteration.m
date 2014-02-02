@@ -85,7 +85,7 @@ end
 if (config.sim.saveSections)
     fprintf('Saving sections ... ');
     sectionstart = tic;
-    saveSection(model, i, sectionCoords, sectionPath);
+    saveSection(model, i, sectionCoords, sectionPath, sectionPageSize, sectionPages);
     sectiontime(i) = toc(sectionstart);
     fprintf('done. (%0.1f min)\n', sectiontime(i)/60);
 end
