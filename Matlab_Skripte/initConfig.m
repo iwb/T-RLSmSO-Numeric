@@ -16,7 +16,7 @@ function [ config ] = initConfig()
 	config.dis.SampleWidth = 6e-3;		% [m]
 	config.dis.SampleThickness = 2.5e-3;	% [m]
 	config.dis.SampleLength = 10e-3;	% [m]
-	config.dis.KeyholeResolution = 12;	% [µm]
+	config.dis.KeyholeResolution = 4;	% [µm]
 	config.dis.StartX = 2e-3;			% [m]
     
     config.dis.TimeStepsPerOsz = 20;			% [-]
