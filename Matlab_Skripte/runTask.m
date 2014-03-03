@@ -232,6 +232,15 @@ try
     model.result('pg').feature('surf1').set('data', 'parent');
     model.result('pg').set('t', 0.1);
     
+    %% MPH speichern
+    if (config.sim.saveTimeStepMph)
+        fprintf('Saving mph file ... ');
+        flushDiary(logPath);
+        mphsave(model, sprintf(timeStepMphPath, 0));
+        fprintf('done.\n');
+        flushDiary(logPath);
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%    Erste Iteration beginnt    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
