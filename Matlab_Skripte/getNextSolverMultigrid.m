@@ -31,12 +31,14 @@ function [ New_Solver ] = getNextSolverMultigrid(model, Old_Solver, dt, varargin
     New_Solver.feature('t1').feature('fc1').set('jtech', 'once');
     New_Solver.feature('t1').feature('fc1').set('damp', '0.9');
     New_Solver.feature('t1').feature('fc1').set('maxiter', '5');
+    New_Solver.feature('t1').feature('fc1').set('dtech', 'auto');
 	
 	% Conjugate Gradient
     New_Solver.feature('t1').feature.create('i1', 'Iterative');
     New_Solver.feature('t1').feature('i1').feature.create('mg1', 'Multigrid');
     New_Solver.feature('t1').feature('i1').set('rhob', '20');
 	New_Solver.feature('t1').feature('i1').set('linsolver', 'cg');
+	New_Solver.feature('t1').feature('i1').set('maxlinit', '200');
 	% Multigrid
     New_Solver.feature('t1').feature('i1').feature('mg1').set('mcasegen', 'manual');
 	New_Solver.feature('t1').feature('i1').feature('mg1').feature('pr').feature('soDef').set('prefun', 'ssor');

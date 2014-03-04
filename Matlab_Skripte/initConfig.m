@@ -16,7 +16,8 @@ function [ config ] = initConfig()
 	config.dis.SampleWidth = 6e-3;		% [m]
 	config.dis.SampleThickness = 2.5e-3;	% [m]
 	config.dis.SampleLength = 10e-3;	% [m]
-	config.dis.KeyholeResolution = 4;	% [µm]
+	config.dis.KeyholeResolution = 12;	% [µm]
+	config.dis.RelativeTolerance = 0.05;% [-]
 	config.dis.StartX = 2e-3;			% [m]
     
     config.dis.TimeStepsPerOsz = 20;			% [-]
@@ -39,15 +40,15 @@ function [ config ] = initConfig()
 	config.sim.PoolConvergenceThreshold = ...	% [-] Recommended: One oscillation
 		ceil(config.dis.TimeSteps / config.dis.Oscillations);	
 
-	config.sim.confirmMesh = true;
-	config.sim.saveSections = true;
+	config.sim.confirmMesh = false;
+	config.sim.saveSections = false;
 	config.sim.savePool = true;
 	config.sim.saveFinalTemps = true;
 	config.sim.saveMph = true;
 	config.sim.saveTimeStepMph = true;
-	config.sim.saveVideo = true;
-    config.sim.savePictures = true;
-	config.sim.showPlot = true;
+	config.sim.saveVideo = false;
+    config.sim.savePictures = false;
+	config.sim.showPlot = false;
 	config.sim.showComsolProgress = true;
 	config.sim.closeComsol = false;
 end

@@ -5,6 +5,7 @@ fprintf('Starting iteration %2d/%2d, Timestep: %0.2fms\n', i, iterations, dt(i)*
 
 %% Zweiten Solver erzeugen
 Solver = getNextSolverMultigrid(model, Solver, dt(i));
+Solver.feature('t1').set('rtol', config.dis.RelativeTolerance);
 
 %% Virtuelle Umgebungstemperatur errechnen
 Pe = config.las.WaistSize / kappa * speedArray(i);

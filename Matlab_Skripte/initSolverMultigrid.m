@@ -11,8 +11,10 @@ solver.feature('t1').feature.create('fc1', 'FullyCoupled');
 solver.feature('t1').feature.create('i1', 'Iterative');
 solver.feature('t1').feature('fc1').set('jtech', 'once');
 solver.feature('t1').feature('fc1').set('maxiter', '5');
+solver.feature('t1').feature('fc1').set('dtech', 'auto');
 solver.feature('t1').feature('i1').set('rhob', '20');
 solver.feature('t1').feature('i1').set('linsolver', 'cg');
+solver.feature('t1').feature('i1').set('maxlinit', '200');
 
 solver.feature('t1').feature('i1').feature.create('mg1', 'Multigrid');
 solver.feature('t1').feature('i1').feature('mg1').feature('cs').feature.create('d1', 'Direct');

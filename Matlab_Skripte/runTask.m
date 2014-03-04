@@ -95,6 +95,7 @@ thermal_distance = kappa ./ meanSpeed;
 step_distance = sqrt(sum(([KH_x(2) ; KH_y(2)] - [KH_x(1) ; KH_y(1)]).^2));
 
 fprintf('Pe: %.1f, WEZ: %.1e, SW: %.1e\n', Pe, thermal_distance, step_distance);
+fprintf('Relative tolerance: %.2g%%\n', config.dis.RelativeTolerance*100);
 
 save([output_path '1 KH+Info.mat'], 'KH_x', 'KH_y', 'dt', 'config');
 
@@ -221,6 +222,7 @@ try
 	model.study('std1').feature('time').set('rtolactive', true);
 
     Solver = initSolverMultigrid(model, dt(1));
+    Solver.feature('t1').set('rtol', config.dis.RelativeTolerance);
     
     %% Anzeige erstellen
     model.result.create('pg', 'PlotGroup3D');
