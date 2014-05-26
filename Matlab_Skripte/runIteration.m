@@ -11,14 +11,13 @@ Solver.feature('t1').set('rtol', config.dis.RelativeTolerance);
 Pe = config.las.WaistSize / kappa * speedArray(i);
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 
-KH_pos = [KH_x(i) ; KH_y(i)];
-lookAhead = khg(3, 1) +  1 * kappa ./ speedArray(i); % [m]
-SensorPoint = KH_pos + lookAhead * [cos(phiArray(i)); sin(phiArray(i))];
-distance = sqrt(sum((SensorPoint - KH_pos).^2));
+KH_pos = [KH_x(i-1) ; KH_y(i-1)];
+lookAhead = khg(3, 1) +  1 * kappa ./ speedArray(i-1); % [m]
+SensorPoint = KH_pos + lookAhead * [cos(phiArray(i-1)); sin(phiArray(i-1))];
 
 SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', [SensorPoint; 0], 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-
-T_inf = calcTinfty(SensorTemp, khg, Pe, config, distance);
+fprintf('Sensor Temp: %.1f\n', SensorTemp);
+T_inf = calcTinfty(SensorTemp, khg, dt(i-1), lookAhead, config);
 
 %% Geometrie updaten
 model.param.set('Lx', KH_x(i));

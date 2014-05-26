@@ -38,7 +38,7 @@ function [ config ] = initConfig()
 	% Number of timesteps in which the projected pool needs to stay
 	% constant so that the simulation is considered finished.
 	config.sim.PoolConvergenceThreshold = ...	% [-] Recommended: One oscillation
-		ceil(config.dis.TimeSteps / config.dis.Oscillations);	
+		config.dis.TimeStepsPerOsz;	
 
 	config.sim.confirmMesh = false;
 	config.sim.saveSections = false;
