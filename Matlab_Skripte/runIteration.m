@@ -11,9 +11,9 @@ Solver.feature('t1').set('rtol', config.dis.RelativeTolerance);
 Pe = config.las.WaistSize / kappa * speedArray(i);
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 
-KH_pos = [KH_x(i-1) ; KH_y(i-1)];
-lookAhead = khg(3, 1) +  1 * kappa ./ speedArray(i-1); % [m]
-SensorPoint = KH_pos + lookAhead * [cos(phiArray(i-1)); sin(phiArray(i-1))];
+KH_pos = [KH_x(i-1) ; KH_y(i-1)]; % Position des vorherigen Keyholes
+lookAhead = 1 * kappa ./ speedArray(i-1); % [m]
+SensorPoint = KH_pos + (khg(3, 1) + lookAhead) * [cos(phiArray(i-1)); sin(phiArray(i-1))];
 
 SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', [SensorPoint; 0], 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
 fprintf('Sensor Temp: %.1f\n', SensorTemp);
