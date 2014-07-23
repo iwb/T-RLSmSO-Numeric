@@ -11,13 +11,34 @@ Solver.feature('t1').set('rtol', config.dis.RelativeTolerance);
 Pe = config.las.WaistSize / kappa * speedArray(i);
 kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
 
-KH_pos = [KH_x(i-1) ; KH_y(i-1)]; % Position des vorherigen Keyholes
-lookAhead = 1 * kappa ./ speedArray(i-1); % [m]
-SensorPoint = KH_pos + (khg(3, 1) + lookAhead) * [cos(phiArray(i-1)); sin(phiArray(i-1))];
+KH_pos = [KH_x(i-1) ; KH_y(i-1)];       % Position des vorherigen Keyholes (Laserstrahlachse)
+KH_posrec = [KH_x(i) ; KH_y(i)];        % Position des aktuellen Keyholes (Laserstrahlachse)
+KH_posreclat = [KH_x(i) ; KH_y(i)] + config.dis.shift * [cos(phiArray(i)+0.5*pi); sin(phiArray(i)+0.5*pi)];     % Position versetzt zu aktuellem KH für 2. Vorheizstreifen
+KH_posrecdepth = [KH_x(i) ; KH_y(i)] + khg(3, 1) * [cos(phiArray(i)); sin(phiArray(i))]; %Position an geschätztem Apex des aktuellen KH
 
-SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', [SensorPoint; 0], 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
-fprintf('Sensor Temp: %.1f\n', SensorTemp);
-T_inf = calcTinfty(SensorTemp, khg, dt(i-1), lookAhead, config);
+% Sensorpunkte im Vorlauf des Keyholes, ausgehend von der Laserstrahlachse
+% 10 Strahlradien tangential bzw. lateral versetzt
+SensorPointend = KH_posrec + 10 * config.las.WaistSize * [cos(phiArray(i)); sin(phiArray(i))];
+SensorPointx = linspace(KH_posrec(1) , SensorPointend(1), config.dis.resvhp);
+SensorPointy = linspace(KH_posrec(2) , SensorPointend(2), config.dis.resvhp);
+SensorPoint = [SensorPointx', SensorPointy'];
+SensorPointlatend = KH_posreclat + 10 * config.las.WaistSize * [cos(phiArray(i)); sin(phiArray(i))];
+SensorPointlatx = linspace(KH_posreclat(1) , SensorPointlatend(1), config.dis.resvhp);
+SensorPointlaty = linspace(KH_posreclat(2) , SensorPointlatend(2), config.dis.resvhp);
+SensorPointlat = [SensorPointlatx', SensorPointlaty'];
+SensorPointdepth(:, 3) = [0 : -config.dis.KeyholeResolution * 1e-6: -config.dis.SampleThickness];
+SensorPointdepth(:, 1) = KH_posrecdepth(1);
+SensorPointdepth(:, 2) = KH_posrecdepth(2);
+SensorPoint3 = [SensorPoint, zeros(length(SensorPoint), 1)]';
+SensorPointlat3 = [SensorPointlat, zeros(length(SensorPointlat), 1)]';
+SensorTemp = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorPoint3, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+SensorTemplat = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', SensorPointlat3, 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+SensorTempdepth(:, 1) = SensorPointdepth(:, 3);
+SensorTempdepth(:, 2) = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)], 'coord', [SensorPointdepth]', 'Solnum', 'end', 'Matherr', 'on', 'Coorderr', 'on');
+ 
+fprintf('Sensor Temp max: %.1f\n', max(SensorTemp));
+fprintf('Sensor Temp min: %.1f\n', min(SensorTemp));
+%T_inf = calcTinfty(SensorTemp, khg, dt(i-1), lookAhead, config);
 
 %% Geometrie updaten
 model.param.set('Lx', KH_x(i));
@@ -30,10 +51,23 @@ keyholestart = tic;
 if (false)
     plotVorlauf
 end
-SensorTempHist(i, :) = SensorTemp;
+
+SensorTempHist(i, 1:length(SensorTemp), 1) = SensorTemp';
+SensorTempHist(i, 1:length(SensorTemplat), 2) = SensorTemplat';
+SensorTempHist(i, 1:length(SensorTempdepth), 3) = SensorTempdepth(:, 1);
+SensorTempHist(i, 1:length(SensorTempdepth), 4) = SensorTempdepth(:, 2);
+save(temperaturePath, 'SensorTempHist');
+
+SensorPointHist.(genvarname(['i' num2str(i)])).vorlauf = SensorPoint;
+SensorPointHist.(genvarname(['i' num2str(i)])).versetzt = SensorPointlat;
+SensorPointHist.(genvarname(['i' num2str(i)])).apex = KH_posrecdepth;
+save(pointPath, 'SensorPointHist');
+
 % mean(SensorTemps)
-KH_depth = updateKeyhole(model, speedArray(i), T_inf, config);
+KH_depth = updateKeyhole(model, speedArray(i), SensorTemp, SensorTemplat, SensorTempdepth, i, config);
 save([output_path '1 KeyholeGeometrie.mat'], 'khg');
+khgHist.(genvarname(['i' num2str(i)])) = khg;
+save([output_path '1 KeyholeHist.mat'], 'khgHist');
 keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
 
@@ -59,13 +93,16 @@ fprintf('done. (%0.1f min)\n', solvertime(i)/60);
 %% Volumenintegration aktualisieren
 
 model.result.numerical('int1').set('data', ['dset' num2str(i)]);
+model.result.numerical('int1').setIndex('looplevelinput', 'all', 0);
 % Workaround
 model.result.numerical('int1').selection.named('geom1_blk1_dom');
 model.result.numerical('int1').getReal();
 % Richtige Auswertung
 model.result.numerical('int1').selection.all;
-energy(i) = model.result.numerical('int1').getReal();
-fprintf('Iterpower: %.1f W\n', (energy(i) - energy(i-1)) ./ dt(i));
+energy(i, :) = model.result.numerical('int1').getReal();
+%energy(i) = model.result.numerical('int1').getReal();
+%fprintf('Iterpower: %.1f W\n', (energy(i) - energy(i-1)) ./ dt(i));
+%fprintf('Iterpower: %.1f W\n', diff(energy)./dt(i));
 save(energyPath, 'energy');
 
 %% Temperaturfeld Plotten

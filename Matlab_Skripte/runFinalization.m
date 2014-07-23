@@ -9,8 +9,9 @@ if exist('allstart', 'var')
 end
 
 %% Eingebrachte Leistung in jeder Iteration berechnen
-addedEnergy = diff(energy);
-iterpower = addedEnergy ./ dt(2:iterations)';
+addedEnergy = diff(energy');
+iterpower = addedEnergy' ./ dt';
+iterpower(1) = NaN;
 
 %% Daten speichern
 fprintf('Saving iteration times ... ');

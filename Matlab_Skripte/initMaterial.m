@@ -1,7 +1,11 @@
 function initMaterial( model, config )
 
 	if (config.mat.UseSysweld)
-		initMaterial_sysweld(model);
+        if (config.mat.SimulatePhaseChange)
+            initMaterial_sysweldPhaseChange(model);
+        else
+            initMaterial_sysweld(model);
+        end
 	else		
 		mat = model.material.create('mat1');
 		mat.name('Stahl');

@@ -1,19 +1,27 @@
-function depth = updateKeyhole(model, speed, temp, config, varargin)
+function depth = updateKeyhole(model, speed, temp, templat, tempdepth, iteration, config, varargin)
 %UPDATEKEYHOLE Summary of this function goes here
 %   Detailed explanation goes here
 
 persistent maxTag;
 
-if (nargin == 5)
+if (nargin == 8)
     maxTag = varargin{1};
     return;
 end
 
 if isempty(maxTag)
 	maxTag = 0;
+    
+    model.geom('geom1').selection.create('KH_Domain', 'CumulativeSelection');
+    model.geom('geom1').selection('KH_Domain').name('Keyhole_Domain');
 end
 ankhstart = tic;
-khg = calcKeyhole(config.dis.KeyholeResolution, speed, temp, config);
+
+% todo übergebe 2 Vektoren für Temps an calcKH
+SensorTemp = temp;
+SensorTemplat = templat;
+SensorTempdepth = tempdepth;
+khg = calcKeyhole(config.dis.KeyholeResolution, speed, SensorTemp, SensorTemplat, SensorTempdepth, iteration, config);
 ankhtime = toc(ankhstart);
 fprintf('Calculation of the keyhole took %0.1f sec\n', ankhtime);
 
@@ -47,11 +55,14 @@ for i = 1:size(CenterArray, 2)-1
     end
     new_tag = ['econ_' num2str(i)];
 	% Maybe there is already a cone there, we just need to update...
-	if (i > maxTag)
-		cone = model.geom('geom1').feature.create(['econ_' num2str(i)], 'ECone');
-	else
-		cone = model.geom('geom1').feature(['econ_' num2str(i)]);
-	end	
+    if (i > maxTag)
+        cone = model.geom('geom1').feature.create(['econ_' num2str(i)], 'ECone');
+        
+        cone.set('createselection', 'on');
+        cone.set('contributeto', 'KH_Domain');
+    else
+        cone = model.geom('geom1').feature(['econ_' num2str(i)]);
+    end
 	conetags{end+1} = new_tag; 
         
 	ratio = RatioArray(i);
@@ -103,12 +114,8 @@ if (maxTag == 0)
     model.selection('KH_Bounds').set('entitydim', '2');    
     model.selection('KH_Bounds').set('input', {'geom1_blk1_bnd' 'geom1_roicone_bnd'});    
     model.selection('KH_Bounds').name('Keyhole_Bounds');
-	
-	model.selection.create('KH_Domain', 'Explicit');
-    model.selection('KH_Domain').name('Keyhole_Domain');
 end
-model.selection('FM_Domain').set(2);
-model.selection('KH_Domain').set(3 : i+2);    
+model.selection('FM_Domain').set(2); 
 
 maxTag = i;
 end

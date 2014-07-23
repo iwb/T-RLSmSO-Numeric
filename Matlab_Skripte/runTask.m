@@ -27,6 +27,9 @@ poolPath = [output_path '4 Pool.mat'];
 timesPath = [output_path '5 Iteration_Times.mat'];
 energyPath = [output_path '6 Energy.mat'];
 workspacePath = [output_path '7 workspace.mat'];
+temperaturePath = [output_path '9.1 Sensortemperaturen.mat'];
+pointPath = [output_path '9.2 Sensorpunkte.mat'];
+vhpPath = [output_path '9.3 Vorheizen.mat'];
 
 if (config.sim.saveVideo && ~config.sim.showPlot)
     error('To save the video, you must enable the plot!');
@@ -53,6 +56,7 @@ if (config.sim.saveSections)
     range_z = single(0 : -resolution : -1.2e-3);
     
     sectionPageSize = [size(range_x, 2), size(range_z, 2)];
+    
     sectionPages = size(range_y, 2);
     
     [XX, YY, ZZ] = meshgrid(range_x, range_y, range_z);
@@ -107,7 +111,7 @@ keyholetime	= zeros(iterations, 1);
 meshtime	= zeros(iterations, 1);
 solvertime	= zeros(iterations, 1);
 pooltime    = zeros(iterations, 1);
-energy      = zeros(iterations, 1);
+energy      = zeros(iterations, 2);
 
 i = 1; % Loop-runrolling für die erste Iteration
 
@@ -143,7 +147,7 @@ model.param.set('phi', sprintf('%.12e [rad]', phiArray(1)));
 model.param.set('Cyl_r', sprintf('%.12e [m]', config.las.WaistSize * 3));
 
 %% Geometrie erzeugen
-model.geom('geom1').feature('fin').set('repairtol', '1.0E-5');
+model.geom('geom1').feature('fin').set('repairtol', '1.0E-6');      % orig: 1.0E-5, führte zu 'interner Fehler bei der Geometriezerlegung'
 model.geom('geom1').autoRebuild('off');
 % Blech
 model.geom('geom1').feature.create('blk1', 'Block');
@@ -169,7 +173,15 @@ fprintf('Calculating KH ...\n');
 keyholestart = tic;
 
 clear updateKeyhole;
-KH_depth = createKeyhole(model, speedArray(1), config);
+% Initialisieren der Sensortemperaturen
+temp(1:config.dis.resvhp, 1) =  config.mat.AmbientTemperature;
+templat(1:config.dis.resvhp, 1) =  config.mat.AmbientTemperature; 
+tempdepth(:, 1) = [0 : -config.dis.KeyholeResolution * 1e-6 : -config.dis.SampleThickness];
+tempdepth(:, 2) = config.mat.AmbientTemperature;
+fprintf('Anzahl an Sensorpunkten: %i (Auflösung: %.2f µm) \n', config.dis.resvhp, 10*config.las.WaistSize*1e6/(config.dis.resvhp-1));
+%fprintf('Anzahl an time steps vhp: %i \n', config.dis.vhpstepst);
+
+KH_depth = createKeyhole(model, speedArray(1), config, temp, templat, tempdepth, i);
 
 keyholetime(i) = toc(keyholestart);
 fprintf('done. (%0.1f sec)\n', keyholetime(i));
@@ -183,7 +195,7 @@ model.physics('ht').feature('init1').set('T', 1, sprintf('%d[K]', config.mat.Amb
 
 % Keyhole Innenraum auf Verdampfungstemperatur
 model.physics('ht').feature.create('init2', 'init', 3);
-model.physics('ht').feature('init2').selection.named('KH_Domain');
+model.physics('ht').feature('init2').selection.named('geom1_KH_Domain_dom');
 model.physics('ht').feature('init2').set('T', 1, config.mat.VaporTemperature);
 model.physics('ht').feature('init2').name('KH_Temp');
 % Keyhole-Rand
@@ -192,12 +204,37 @@ model.physics('ht').feature('temp1').selection.named('KH_Bounds');
 model.physics('ht').feature('temp1').set('T0', 1, config.mat.VaporTemperature);
 model.physics('ht').feature('temp1').name('KH_Rand');
 
+% Strahlung Werkstückoberseite-Umgebung
+if (config.mat.SimulateRadiation)
+    model.physics('ht').feature.create('sar1', 'SurfaceToAmbientRadiation', 2);
+    model.physics('ht').feature('sar1').set('epsilon_rad_mat', 1, 'userdef');
+    model.physics('ht').feature('sar1').set('epsilon_rad_mat', 1, 'from_mat');
+    model.physics('ht').feature('sar1').selection.set([4 8 12]);                    %Unterseite: Fläche 3
+    model.physics('ht').feature('sar1').set('Tamb', 1, '300.00[K]');
+    model.physics('ht').feature('sar1').set('epsilon_rad_mat', 1, 'userdef');
+    model.physics('ht').feature('sar1').set('epsilon_rad', 1, '0.15');
+    fprintf('Simulating radiation from surface to ambient \n');
+end
+
+% freie Konvektion an horizontaler Platte (Bauteiloberfläche)
+if (config.mat.SimulateConvection)
+    model.physics('ht').feature.create('chf1', 'ConvectiveHeatFlux', 2);
+    model.physics('ht').feature('chf1').selection.set([4]);
+    model.physics('ht').feature('chf1').set('HeatTransferCoefficientType', 1, 'ExtNaturalConvection');
+    %model.physics('ht').feature('chf1').set('Lwall', 1, '1');
+    model.physics('ht').feature('chf1').set('Text', 1, '300[K]');
+    model.physics('ht').feature('chf1').set('ExtNaturalConvectionType', 1, 'HorizontalPlateUp');
+    model.physics('ht').feature('chf1').set('Ldia', 1, '0.0014286');
+    
+    fprintf('Simulating natural convection on surface \n');
+end
+
 %% Mesh erzeugen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_fine(model);
+createMesh_62(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));
@@ -255,6 +292,7 @@ try
     
     tweet(sprintf('Starting calculation (%2d/%2d timesteps, %3d elements)', iterations, config.dis.TimeSteps, stats.numelem(2)));
     
+    
     %% Modell lösen
     fprintf('Solving model ... ');
     solverstart = tic;
@@ -269,8 +307,8 @@ try
     model.result.numerical('int1').setIndex('looplevelinput', 'last', 0);
     model.result.numerical('int1').selection.all;
     model.result.numerical('int1').set('expr', 'material.rho * material.Cp * (T - 293.15[K])');
-    energy(i) = model.result.numerical('int1').getReal();
-    
+    energy(i, 2) = model.result.numerical('int1').getReal();
+        
     %% Temperaturfeld Plotten
     if (config.sim.showPlot)
         h1 = subplot(2, 1, 2);
@@ -281,7 +319,7 @@ try
     
     %% Schnitt speichern
     if (config.sim.saveSections)
-        saveSection(model, i, sectionCoords, sectionPath);
+        saveSection(model, i, sectionCoords, sectionPath, sectionPageSize, sectionPages);
     end
     
     %% Pool kumulieren
@@ -313,7 +351,7 @@ try
     progress_msg = sprintf('Iteration %2d/%2d was finished in %.1f minutes\nApproximately %4.1f minutes remaining (%s).\n\n', i, iterations, itertime/60, remaining/60,  datestr(now + remaining/86400, 'yyyy-mm-dd HH:MM:SS'));
     fprintf(progress_msg);
     tweet(progress_msg);
-    
+        
     %% GIF, erster Frame
     if (config.sim.saveVideo)
         % Next line of code are intended to stop the subplots from shrinking
@@ -358,7 +396,7 @@ try
     
 catch msg
     tweet(['Error! Calculation canceled. '  msg.identifier]);
-    
+        
 	fprintf('\n\nException handling invoked.\n');
 	
     fprintf('Saving iteration times ... ');

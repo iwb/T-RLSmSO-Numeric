@@ -1,4 +1,4 @@
-function [ KH_geom, Reason ] = calcKeyhole(zResolution, speed, temperature, config)
+function [ KH_geom, Reason ] = calcKeyhole(zResolution, speed, temperature, temperaturelat, temperaturedepth, iteration, config)
 %calcKeyhole Berechnet die Geometrie des Keyholes.
 %	Parameter ist die Diskretisierung in z-Richtung in µm.
 %   Rückgabewert ist eine 3xn Matrix. IN der ersten Spalte ist der
@@ -12,7 +12,8 @@ param.w0 = config.las.WaistSize;
 param.epsilon = config.mat.FresnelEpsilon;
 param.v = speed;
 param.I0 = config.osz.Power * 2/(pi*config.las.WaistSize^2); % [W/m2]
-param.T0 = temperature;
+%todo Abklären, ob T0 = Umgebungstemperatur
+param.T0 = config.mat.AmbientTemperature;
 param.Tv = config.mat.VaporTemperature;
 param.lambda = config.mat.ThermalConductivity;
 param.kappa = config.mat.ThermalConductivity / (config.mat.Density * config.mat.HeatCapacity);
@@ -29,9 +30,15 @@ param.scaled.gamma = param.w0 * param.I0 / (param.lambda * (param.Tv - param.T0)
 param.scaled.hm = config.mat.FusionEnthalpy / (config.mat.HeatCapacity*(param.Tv - param.T0));
 
 %% VHP berechnen
-versatz = 0.5 * config.las.WaistSize;
-vhp1 = vhp_dgl(0, param);
-vhp2 = vhp_dgl(versatz, param);
+%versatz = 0.5 * config.las.WaistSize;
+versatz = config.dis.shift;
+
+% todo zusätzlicher Parameter: Temp.vektor
+SensorTemp = temperature;
+SensorTemplat = temperaturelat;
+SensorTempdepth = temperaturedepth;
+vhp1 = vhp_dgl(0, param, SensorTemp, iteration, config);
+vhp2 = vhp_dgl(versatz, param, SensorTemplat, iteration, config);
 %% Startwerte
 A0 = vhp1 / param.w0; % VHP an der Blechoberfläche
 % Radius der Schmelzfront an der Oberfläche
@@ -73,6 +80,13 @@ while (true)
 	zindex = zindex + 1;
 	prevZeta = zeta;
 	zeta = zeta + d_zeta;
+    
+    %todo gamma, hm neu skalieren, T statt T_0
+    %todo inerp1, z-Wert in SensorTemp mit anführen, zeta ist normierte
+    %z-Tiefe
+    tempT = interp1(SensorTempdepth(:, 1), SensorTempdepth(:, 2), zeta .* config.las.WaistSize);      % interpolierte Temperatur für aktuelle z-Schicht aus Sensorwerten
+    param.scaled.gamma = param.w0 * param.I0 / (param.lambda * (param.Tv - tempT));
+    param.scaled.hm = config.mat.FusionEnthalpy / (config.mat.HeatCapacity*(param.Tv - tempT));
 	
 	%% Nullstellensuche mit MATLAB-Verfahren
 	% Variablen für Nullstellensuche
@@ -99,12 +113,17 @@ while (true)
 	
 	% Berechnung des Radius
 	func2 = @(alpha) khz_func2(alpha, currentA, arguments, param);
-	alpha_interval(1) = 0.5*currentA; % Minimalwert
-	alpha_interval(2) = 1.05 * currentAlpha; % Maximalwert
-	try
+	alpha_interval(1) = 0.3*currentA; % Minimalwert 0.5
+	alpha_interval(2) = 1.25 * currentAlpha; % Maximalwert 1.05
+    try
 		currentAlpha = fzero(func2, alpha_interval);
 	catch err
 		Reason = struct('Num', 3, 'Name', sprintf('Abbruch mangels Nullstelle beim Radius. Endgültige Tiefe: %3.0f\n', zeta));
+        
+        fprintf('Abbruch mangels Nullstelle beim Radius. \n');
+        fprintf('currentAlpha: %.4f \n', currentAlpha);
+        fprintf('alpha_inteval min: %.4f max: %.4f \n', alpha_interval(1), alpha_interval(2));
+    
 		break;
 	end
 	
@@ -129,7 +148,8 @@ while (true)
 	% Werte übernehmen und sichern
     KH_geom(1, zindex+1) = zeta;
 	Apex(zindex) = currentA;
-	Radius(zindex) = currentAlpha;
+
+    Radius(zindex) = currentAlpha;
 end
 zindex = zindex - 1;
 
