@@ -17,7 +17,7 @@ if isempty(maxTag)
 end
 ankhstart = tic;
 
-% todo übergebe 2 Vektoren für Temps an calcKH
+% übergebe Vorlauftemperaturen an calcKeyhole
 SensorTemp = temp;
 SensorTemplat = templat;
 SensorTempdepth = tempdepth;

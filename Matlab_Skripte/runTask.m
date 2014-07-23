@@ -53,7 +53,7 @@ if (config.sim.saveSections)
     resolution = 10e-6; % [m]
     range_x = single(0 : resolution : config.dis.SampleLength);
     range_y = single(linspace(-4e-4, 4e-4, 9));
-    range_z = single(0 : -resolution : -1.2e-3);
+    range_z = single(0 : -resolution : -2.0e-3);
     
     sectionPageSize = [size(range_x, 2), size(range_z, 2)];
     
@@ -73,7 +73,7 @@ if (config.sim.savePool)
     resolution = 10e-6; % [m]
     range_x = (1.5e-3 : resolution : 4e-3);
     range_y = (-1e-3 : resolution : 1e-3);
-    range_z = (0 : -resolution : -1.5e-3);
+    range_z = (0 : -resolution : -2.0e-3);
     
     [YY, XX, ZZ] = meshgrid(range_y, range_x, range_z);
     poolCoords = [XX(:)'; YY(:)'; ZZ(:)'];
@@ -179,7 +179,6 @@ templat(1:config.dis.resvhp, 1) =  config.mat.AmbientTemperature;
 tempdepth(:, 1) = [0 : -config.dis.KeyholeResolution * 1e-6 : -config.dis.SampleThickness];
 tempdepth(:, 2) = config.mat.AmbientTemperature;
 fprintf('Anzahl an Sensorpunkten: %i (Auflösung: %.2f µm) \n', config.dis.resvhp, 10*config.las.WaistSize*1e6/(config.dis.resvhp-1));
-%fprintf('Anzahl an time steps vhp: %i \n', config.dis.vhpstepst);
 
 KH_depth = createKeyhole(model, speedArray(1), config, temp, templat, tempdepth, i);
 
@@ -234,7 +233,7 @@ fprintf('Meshing ... ');
 meshstart = tic;
 
 ModelUtil.showProgress(config.sim.showComsolProgress);
-createMesh_62(model);
+createMesh_fineadapted(model);
 
 meshtime(i) = toc(meshstart);
 fprintf('done. (%0.1f sec)\n', meshtime(i));

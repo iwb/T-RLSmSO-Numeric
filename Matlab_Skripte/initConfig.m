@@ -17,14 +17,14 @@ function [ config ] = initConfig()
 	config.dis.SampleThickness = 5e-3;	% [m]
 	config.dis.SampleLength = 50e-3;	% [m]
 	config.dis.KeyholeResolution = 12;	% [µm]
-	config.dis.RelativeTolerance = 0.05;% [-]
+	config.dis.RelativeTolerance = 0.01;% [-]
 	config.dis.StartX = 10e-3;			% [m]
     
     config.dis.TimeStepsPerOsz = 20;			% [-]
 	config.dis.Oscillations = 3.5;				% [-] X.5 recommended
 	config.dis.TimeSteps = 1 + config.dis.TimeStepsPerOsz * config.dis.Oscillations;
     
-    config.dis.resvhp = 501;                       % [-] Anzahl an Sensorpunkten im Vorlauf des Keyholes
+    config.dis.resvhp = 501;                        % [-] Anzahl an Sensorpunkten im Vorlauf des Keyholes
     config.dis.vhpstepst = 2001;                    % [-] Anzahl an time steps zum Lösen der DGLs bei der Berechnung der VHPs
     config.dis.shift = 0.5 * config.las.WaistSize;  % [m] Versatz zu tangentialem Vorlauf zur Berechnung von A_0
 

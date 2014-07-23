@@ -38,7 +38,6 @@ SensorTempdepth(:, 2) = mphinterp(model, {'T'}, 'dataset', ['dset' num2str(i-1)]
  
 fprintf('Sensor Temp max: %.1f\n', max(SensorTemp));
 fprintf('Sensor Temp min: %.1f\n', min(SensorTemp));
-%T_inf = calcTinfty(SensorTemp, khg, dt(i-1), lookAhead, config);
 
 %% Geometrie updaten
 model.param.set('Lx', KH_x(i));

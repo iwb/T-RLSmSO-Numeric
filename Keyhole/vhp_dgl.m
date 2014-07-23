@@ -11,29 +11,7 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
 
     %% Diskretisierung der Zeit
     steps_t = config.dis.vhpstepst;
-    %t = linspace(0, param.xOffset/param.v, steps_t);
-    %dt = t(2) - t(1);
-
-    %% Intensitätsvektor berechnen
     
-    %todo verschieben in SChleife
-    
-    
-
-    % Berechnung der diskreten Intensitäten zu jedem t
-    %Alte Berechnung
-%     distance = sqrt((xVec.*param.w0).^2 + (yVec.*param.w0).^2);
-%     I2 = 0.39 * param.I0 * exp(-distance.^2 ./ (2 * param.w0^2)); % [W/m^2]
-    %Neue Berechnung
-    
-
-%     figure;
-%     plot(I, 'b')
-%     hold on
-%     plot(I2, 'r')
-%     hold off
-%     legend('verwendet in keyhole_z', 'ursprünglich für vhp', 'Location', 'NorthWest')
-
     %% Vorbereitung
 
     % Die Array sind nur zum Speichern
@@ -69,13 +47,11 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
     %% Rechnen
     for i = 1:steps_t
         
-        % Intensität
+        % Intensitätsvektor berechnen
         t = i / steps_t * backshift * param.w0 / param.v;
         xl = -backshift * param.w0 + t * param.v;
         xVec = (vhppoints - xl) ./ param.w0; % Normierung mit w0
-        %yVec = repmat(versatz, 1, steps_t) ./ param.w0; % Normierung mit w0
         yVec = repmat(versatz, 1, config.dis.resvhp) ./ param.w0; % Normierung mit w0
-        %zVec = zeros(1, steps_t);
         zVec = zeros(1, config.dis.resvhp);
         points = [xVec; yVec; zVec];
         [pVec, intensity] = calcPoynting(points, param);
@@ -89,7 +65,6 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
         % Wärmeeindringtiefe
         ddelta = 1/(Ts'-param.T0) * (param.kappa*I'/param.lambda - dTstemp'*delta);
         
-
         dTstemp = dTs';
         Ts = (Ts' + dTs .* dt)';
         delta = delta + ddelta .* dt;
@@ -107,18 +82,6 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
 %             plot(t,DeltaArray)
 %             drawnow;
 %         end
-
-        % VHP ausrechnen
-        %if ~index && Ts > param.Tv
-        %    % VHP gefunden :-)
-        %    T1 = TempArray(i-1);
-        %    zeitpunkt = t(i-1) + (param.Tv - T1)/(Ts - T1) * dt;
-        %    
-        %    vhp = (param.xOffset - zeitpunkt*param.v);
-        %    
-        %    %fprintf('Original DGL - Vorheizpunkt: %0.2f µm\n\n', 5);
-        %    return;
-        %end
     end
     
     % speichere TempArray, DeltaArray zu Analysezwecken
@@ -129,7 +92,6 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
         pathaug = 'v';
     end
     vhpPath = [output_path '9 Vorheizen_' num2str(iteration, '%03.0f') pathaug '.mat'];
-    %vhpPath = [output_path '9.3 Vorheizen.mat'];
     %vhpArray.(genvarname(['i' num2str(iteration) pathaug])).Temp = TempArray;
     %vhpArray.(genvarname(['i' num2str(iteration) pathaug])).Delta = DeltaArray;
     %vhpArray.(genvarname(['i' num2str(iteration) pathaug])).I = IArray;
@@ -138,7 +100,7 @@ function vhp = vhp_dgl(versatz, param, SensorTemp, iteration, config)
     vhpArray.I = IArray;
     save(vhpPath, 'vhpArray');
     
-    % Auswertung, ob Tv erreicht wurde
+    % VHP ausrechnen
     i = 1;
     while (Ts(i) > param.Tv)
         i = i + 1;

@@ -12,7 +12,7 @@ param.w0 = config.las.WaistSize;
 param.epsilon = config.mat.FresnelEpsilon;
 param.v = speed;
 param.I0 = config.osz.Power * 2/(pi*config.las.WaistSize^2); % [W/m2]
-%todo Abklären, ob T0 = Umgebungstemperatur
+
 param.T0 = config.mat.AmbientTemperature;
 param.Tv = config.mat.VaporTemperature;
 param.lambda = config.mat.ThermalConductivity;
@@ -30,10 +30,8 @@ param.scaled.gamma = param.w0 * param.I0 / (param.lambda * (param.Tv - param.T0)
 param.scaled.hm = config.mat.FusionEnthalpy / (config.mat.HeatCapacity*(param.Tv - param.T0));
 
 %% VHP berechnen
-%versatz = 0.5 * config.las.WaistSize;
 versatz = config.dis.shift;
 
-% todo zusätzlicher Parameter: Temp.vektor
 SensorTemp = temperature;
 SensorTemplat = temperaturelat;
 SensorTempdepth = temperaturedepth;
@@ -81,9 +79,7 @@ while (true)
 	prevZeta = zeta;
 	zeta = zeta + d_zeta;
     
-    %todo gamma, hm neu skalieren, T statt T_0
-    %todo inerp1, z-Wert in SensorTemp mit anführen, zeta ist normierte
-    %z-Tiefe
+    % gamma, hm neu skalieren
     tempT = interp1(SensorTempdepth(:, 1), SensorTempdepth(:, 2), zeta .* config.las.WaistSize);      % interpolierte Temperatur für aktuelle z-Schicht aus Sensorwerten
     param.scaled.gamma = param.w0 * param.I0 / (param.lambda * (param.Tv - tempT));
     param.scaled.hm = config.mat.FusionEnthalpy / (config.mat.HeatCapacity*(param.Tv - tempT));
